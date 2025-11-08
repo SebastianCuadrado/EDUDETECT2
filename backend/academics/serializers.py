@@ -1,0 +1,105 @@
+from django.contrib.auth import get_user_model
+from rest_framework import serializers
+from .models import Student, Classroom, Enrollment, TeacherAssignment, StudentTeacher, Evaluation
+
+
+User = get_user_model()
+
+
+class ClassroomSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Classroom
+        fields = ["id", "name", "school", "academic_year", "grade", "section"]
+        extra_kwargs = {
+            "school": {"required": False, "allow_blank": True},
+            "name": {"required": True}
+        }
+
+
+class StudentSerializer(serializers.ModelSerializer):
+    last_evaluation = serializers.SerializerMethodField(read_only=True)
+    photo = serializers.ImageField(required=False, allow_null=True)
+
+    class Meta:
+        model = Student
+        fields = [
+            "id",
+            "dni",
+            "first_name",
+            "last_name",
+            "birth_date",
+            "gender",
+            "email",
+            "phone",
+            "photo",
+            "last_evaluation",
+        ]
+
+    def get_last_evaluation(self, obj):
+        ev = obj.evaluations.order_by("-evaluated_at", "-id").first()
+        if not ev:
+            return None
+        return {
+            "evaluated_at": ev.evaluated_at,
+            "diagnosis": ev.diagnosis,
+            "probability": ev.probability,
+            "evaluated_by": getattr(ev.evaluated_by, "username", None),
+        }
+
+
+class EvaluationSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField(read_only=True)
+    evaluated_by_name = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Evaluation
+        fields = [
+            "id",
+            "student",
+            "student_name",
+            "evaluated_by",
+            "evaluated_by_name",
+            "evaluated_at",
+            "diagnosis",
+            "probability",
+            "notes",
+            "model_version",
+        ]
+        read_only_fields = ["evaluated_by"]
+        extra_kwargs = {
+            "probability": {"required": False, "allow_null": True}
+        }
+
+    def get_student_name(self, obj):
+        try:
+            return str(obj.student)
+        except Exception:
+            return None
+
+    def get_evaluated_by_name(self, obj):
+        return getattr(obj.evaluated_by, "username", None)
+
+    def create(self, validated_data):
+        request = self.context.get("request")
+        if request and request.user and request.user.is_authenticated:
+            validated_data["evaluated_by"] = request.user
+        return super().create(validated_data)
+
+
+class EnrollmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Enrollment
+        fields = ["id", "student", "classroom", "start_date", "end_date"]
+
+
+class TeacherAssignmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TeacherAssignment
+        fields = ["id", "teacher", "classroom", "role", "start_date", "end_date"]
+
+
+class StudentTeacherSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentTeacher
+        fields = ["id", "student", "teacher", "academic_year", "note", "created_at"]
+        read_only_fields = ["created_at"]

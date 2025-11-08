@@ -1,0 +1,6 @@
+Django>=5.0,<6.0
+django-cors-headers>=4.4,<5.0
+python-dotenv>=1.0,<2.0
+psycopg2-binary>=2.9,<3.0
+djangorestframework>=3.15,<3.16  # opcional
+# gunicorn>=21.2,<22.0            # opcional
