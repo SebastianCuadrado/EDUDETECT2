@@ -238,7 +238,12 @@ def main():
                 ok, msg = delete_student(stu.get('id'))
                 if ok:
                     st.success("Alumno eliminado")
-                    st.session_state.admin_students_cache = [x for x in students if x.get('id') != stu.get('id')]
+                    # Invalida caché para forzar recarga desde backend
+                    try:
+                        if 'admin_students_cache' in st.session_state:
+                            del st.session_state['admin_students_cache']
+                    except Exception:
+                        pass
                     _safe_rerun()
                 else:
                     st.error(msg)
