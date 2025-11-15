@@ -1,6 +1,7 @@
 import os
 import requests
 import streamlit as st
+
 from ui_common import ensure_auth, render_sidebar_nav, render_topbar
 
 
@@ -15,7 +16,7 @@ def auth_headers():
 def fetch_users(query: str | None = None):
     try:
         params = {"search": query} if query else None
-        r = requests.get(f"{API_URL}/users/", headers=auth_headers(), params=params, timeout=10)
+        r = requests.get(f"{API_URL}/users/", headers=auth_headers(), params=params, timeout=12)
         r.raise_for_status()
         data = r.json()
         return data.get("results", data)
@@ -24,9 +25,30 @@ def fetch_users(query: str | None = None):
         return []
 
 
-def delete_user(user_id: int):
+def fetch_assignments_count(user_ids: list[int]) -> dict[int, int]:
+    counts: dict[int, int] = {}
+    for uid in user_ids:
+        try:
+            r = requests.get(
+                f"{API_URL}/teacher-assignments/",
+                headers=auth_headers(),
+                params={"teacher": uid},
+                timeout=12,
+            )
+            if r.status_code == 200:
+                data = r.json()
+                items = data.get("results", data)
+                counts[uid] = len(items) if isinstance(items, list) else 0
+            else:
+                counts[uid] = 0
+        except Exception:
+            counts[uid] = 0
+    return counts
+
+
+def delete_user(user_id: int) -> bool:
     try:
-        r = requests.delete(f"{API_URL}/users/{user_id}/", headers=auth_headers(), timeout=10)
+        r = requests.delete(f"{API_URL}/users/{user_id}/", headers=auth_headers(), timeout=12)
         if r.status_code in (204, 200):
             st.success("Usuario eliminado")
             return True
@@ -41,7 +63,7 @@ def safe_rerun():
     try:
         st.rerun()
     except Exception:
-        if hasattr(st, 'experimental_rerun'):
+        if hasattr(st, "experimental_rerun"):
             try:
                 st.experimental_rerun()
             except Exception:
@@ -49,12 +71,14 @@ def safe_rerun():
 
 
 def main():
-    st.set_page_config(page_title="Usuarios", page_icon="👤", layout="wide")
+    st.set_page_config(page_title="Gestión de Usuarios", page_icon="👥", layout="wide")
     ensure_auth("ADMIN")
     render_sidebar_nav()
     render_topbar()
 
-    st.title("Usuarios")
+    st.title("Gestión de Usuarios")
+
+    # Botón nuevo usuario
     col_new, _ = st.columns([1, 5])
     if col_new.button("Nuevo usuario"):
         st.session_state.selected_user_id = None
@@ -67,60 +91,59 @@ def main():
             pass
         safe_rerun()
 
+    # Filtro
     c_search, c_btn = st.columns([4, 1])
     with c_search:
-        q = st.text_input("Buscar usuario", placeholder="username, nombre, email, DNI, teléfono")
+        q = st.text_input("Buscar", placeholder="username, nombre, email")
     with c_btn:
         do_search = st.button("Buscar", use_container_width=True)
 
     if do_search or "users_cache" not in st.session_state:
         st.session_state.users_cache = fetch_users(q)
-
     users = st.session_state.get("users_cache", [])
-    st.markdown("#### Resultados")
+
+    st.markdown("### Lista de usuarios")
     if not users:
         st.info("Sin usuarios para mostrar.")
         return
 
-    header_cols = ["ID", "Username", "Nombre", "Correo", "Teléfono", "DNI", "Rol", "Editar", "Eliminar"]
-    st.markdown(" | ".join(header_cols))
-    st.markdown(":-" * len(header_cols))
+    # Cargar conteo de salones asignados por docente
+    teacher_ids = [u.get("id") for u in users if (u.get("role") or "").upper() in ("DOCENTE", "TEACHER", "PROFESOR")]
+    assign_counts = fetch_assignments_count(teacher_ids) if teacher_ids else {}
 
+    # Tarjetas similares al listado de alumnos
     for u in users:
         uid = u.get("id")
-        username = u.get("username")
-        nombre = (u.get("first_name") or "") + (" " + u.get("last_name") if u.get("last_name") else "")
-        email = u.get("email")
-        phone = u.get("phone")
-        dni = u.get("dni")
-        role = u.get("role")
+        username = u.get("username") or ""
+        nombre = ((u.get("first_name") or "") + " " + (u.get("last_name") or "")).strip()
+        email = u.get("email") or "-"
+        role = u.get("role") or "-"
+        role_up = (role or "").upper()
+        salons = assign_counts.get(uid) if role_up in ("DOCENTE", "TEACHER", "PROFESOR") else None
 
-        c1, c2, c3, c4, c5, c6, c7, c8, c9 = st.columns([0.6, 1.2, 1.8, 2.5, 1.5, 1.5, 1.2, 1.0, 1.0])
-        c1.write(uid)
-        c2.write(username)
-        c3.write(nombre.strip() or "-")
-        c4.write(email)
-        c5.write(phone or "-")
-        c6.write(dni)
-        c7.write(role)
-        upd = c8.button("Editar", key=f"upd_{uid}")
-        rem = c9.button("Eliminar", key=f"del_{uid}")
-        if rem:
-            if delete_user(uid):
-                st.session_state.users_cache = [x for x in st.session_state.users_cache if x.get("id") != uid]
+        with st.container(border=True):
+            c1, c2, c3, c4 = st.columns([3, 3, 1.2, 1.2])
+            c1.write(nombre or username)
+            c2.caption(f"{username} · {email}")
+            if salons is None:
+                c3.caption(f"Rol: {role}")
+            else:
+                c3.caption(f"Rol: {role} · Salones: {salons}")
+            if c4.button("Editar", key=f"upd_{uid}"):
+                st.session_state.selected_user_id = uid
+                st.session_state.user_create_mode = False
+                try:
+                    if hasattr(st, "switch_page"):
+                        st.switch_page("pages/11_Editar_Usuario.py")
+                        return
+                except Exception:
+                    pass
                 safe_rerun()
-        if upd:
-            st.session_state.selected_user_id = uid
-            st.session_state.user_create_mode = False
-            try:
-                if hasattr(st, "switch_page"):
-                    st.switch_page("pages/11_Editar_Usuario.py")
-                    return
-            except Exception:
-                pass
-            safe_rerun()
+            if st.button("Eliminar", key=f"del_{uid}"):
+                if delete_user(uid):
+                    st.session_state.users_cache = [x for x in st.session_state.users_cache if x.get("id") != uid]
+                    safe_rerun()
 
 
 if __name__ == "__main__":
     main()
-

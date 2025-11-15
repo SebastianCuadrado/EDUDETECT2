@@ -12,28 +12,16 @@ class ClassroomSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "school", "academic_year", "grade", "section"]
         extra_kwargs = {
             "school": {"required": False, "allow_blank": True},
-            "name": {"required": True}
+            "name": {"required": False, "allow_blank": True},
         }
 
 
 class StudentSerializer(serializers.ModelSerializer):
     last_evaluation = serializers.SerializerMethodField(read_only=True)
-    photo = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = Student
-        fields = [
-            "id",
-            "dni",
-            "first_name",
-            "last_name",
-            "birth_date",
-            "gender",
-            "email",
-            "phone",
-            "photo",
-            "last_evaluation",
-        ]
+        fields = ["id", "first_name", "last_name", "age", "gender", "last_evaluation"]
 
     def get_last_evaluation(self, obj):
         ev = obj.evaluations.order_by("-evaluated_at", "-id").first()
@@ -67,7 +55,7 @@ class EvaluationSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["evaluated_by"]
         extra_kwargs = {
-            "probability": {"required": False, "allow_null": True}
+            "probability": {"required": False, "allow_null": True},
         }
 
     def get_student_name(self, obj):
@@ -103,3 +91,15 @@ class StudentTeacherSerializer(serializers.ModelSerializer):
         model = StudentTeacher
         fields = ["id", "student", "teacher", "academic_year", "note", "created_at"]
         read_only_fields = ["created_at"]
+
+
+class EvaluationInferenceSerializer(serializers.Serializer):
+    student = serializers.IntegerField()
+    answers = serializers.ListField(
+        child=serializers.ChoiceField(choices=[
+            "NUNCA", "RARA VEZ", "A VECES", "FRECUENTEMENTE", "SIEMPRE"
+        ]),
+        min_length=30,
+        max_length=30,
+    )
+    notes = serializers.CharField(allow_blank=True, required=False)

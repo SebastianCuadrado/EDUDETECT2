@@ -1,4 +1,4 @@
-import os
+﻿import os
 import requests
 import streamlit as st
 from datetime import date
@@ -101,7 +101,7 @@ def go_back():
 
 
 def main():
-    st.set_page_config(page_title="Usuario", page_icon="👤", layout="wide")
+    st.set_page_config(page_title="Usuario", page_icon="ðŸ‘¤", layout="wide")
     ensure_auth("ADMIN")
     render_sidebar_nav()
     render_topbar()
@@ -111,7 +111,7 @@ def main():
 
     col1, col2 = st.columns([6, 1])
     with col2:
-        if st.button("← Volver"):
+        if st.button("â† Volver"):
             st.session_state.user_create_mode = False
             st.session_state.selected_user_id = None
             go_back()
@@ -189,7 +189,7 @@ def main():
             if staged:
                 st.caption("Nuevas asignaciones (pendientes de guardar):")
                 for i, a in enumerate(staged, start=1):
-                    st.write(f"{i}. Aula ID {a['classroom']} · Rol {a['role']} · Inicio {a.get('start_date') or '-'}")
+                    st.write(f"{i}. Aula ID {a['classroom']} Â· Rol {a['role']} Â· Inicio {a.get('start_date') or '-'}")
 
             rooms = api_get_classrooms()
             room_opts = [(c.get("id"), f"{c.get('academic_year')} - {c.get('grade')}{c.get('section')}") for c in rooms]
@@ -284,4 +284,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 

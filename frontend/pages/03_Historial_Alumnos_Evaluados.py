@@ -81,7 +81,7 @@ def create_evaluation(student_id: int, evaluated_at: date, diagnosis: str, notes
 
 
 def main():
-    st.set_page_config(page_title="Alumnos", page_icon="👥", layout="wide")
+    st.set_page_config(page_title="Alumnos", page_icon="📋", layout="wide")
     ensure_auth()
     render_sidebar_nav()
     render_topbar()
@@ -171,7 +171,7 @@ def main():
                     st.session_state.new_eval_mode = True
                     st.experimental_rerun() if hasattr(st, "experimental_rerun") else st.rerun()
             else:
-                st.markdown("#### Nueva evaluación (cuestionario 1–5)")
+                st.markdown("#### Nueva evaluación (cuestionario 15)")
 
                 QUESTIONS = [
                     # Sección A. Lectura y decodificación
@@ -194,7 +194,7 @@ def main():
                     "Dificultad para escribir frases coherentes.",
                     # Sección D. Matemáticas básicas
                     "Comete errores frecuentes en operaciones básicas (suma, resta, multiplicación, división).",
-                    "Confunde los signos matemáticos (+, −, ×, ÷).",
+                    "Confunde los signos matemáticos (+, , , ÷).",
                     "Dificultad para memorizar tablas de multiplicar.",
                     "Se pierde al resolver problemas con más de un paso.",
                     "Aplica mal conceptos matemáticos en ejercicios.",

@@ -1,6 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 from rest_framework import viewsets, permissions, filters
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
@@ -12,7 +15,9 @@ from .serializers import (
     TeacherAssignmentSerializer,
     StudentTeacherSerializer,
     EvaluationSerializer,
+    EvaluationInferenceSerializer,
 )
+from .services.ml_inference import predict as ml_predict
 
 
 User = get_user_model()
@@ -78,7 +83,7 @@ class StudentViewSet(viewsets.ModelViewSet):
     serializer_class = StudentSerializer
     permission_classes = [IsAdminOrScopedReadOnly]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ["first_name", "last_name", "dni", "email", "phone"]
+    search_fields = ["first_name", "last_name"]
     ordering_fields = ["id", "last_name", "first_name"]
 
     def get_queryset(self):
@@ -105,9 +110,6 @@ class StudentViewSet(viewsets.ModelViewSet):
             qs = qs.filter(
                 models.Q(first_name__icontains=q)
                 | models.Q(last_name__icontains=q)
-                | models.Q(dni__icontains=q)
-                | models.Q(email__icontains=q)
-                | models.Q(phone__icontains=q)
             )
 
         year = request.query_params.get("year")
@@ -198,3 +200,38 @@ class EvaluationViewSet(viewsets.ModelViewSet):
         if mine and str(mine).lower() in ("1", "true", "yes"): 
             qs = qs.filter(evaluated_by=self.request.user)
         return qs.order_by("-evaluated_at", "-id")
+
+
+class EvaluateQuestionnaireView(APIView):
+    permission_classes = [IsAdminOrTeacher]
+
+    def post(self, request, *args, **kwargs):
+        ser = EvaluationInferenceSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        data = ser.validated_data
+        # Alcance: el estudiante debe estar en el scope del usuario
+        try:
+            student = Student.objects.get(id=data["student"]) 
+        except Student.DoesNotExist:
+            return Response({"detail": "Alumno no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        if not scoped_students_qs(request.user).filter(id=student.id).exists():
+            return Response({"detail": "Sin permiso para evaluar a este alumno"}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            diagnosis, probability, version = ml_predict(data["answers"], age=getattr(student, "age", None))
+        except Exception as e:
+            return Response({"detail": f"Error de inferencia: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        def diag_label(code: str) -> str:
+            return {
+                "BAJO": "Menos del 60% (Nivel Bajo)",
+                "MEDIO": "Entre 60% - 85% (Nivel Medio)",
+                "ALTO": "Más del 85% (Nivel Alto)",
+            }.get(code, code)
+
+        return Response({
+            "diagnosis": diagnosis,  # código BAJO/MEDIO/ALTO
+            "diagnosis_label": diag_label(diagnosis),
+            "probability": probability,
+            "model_version": version,
+        })

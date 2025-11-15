@@ -1,5 +1,5 @@
-import os
-from datetime import date, datetime, timedelta
+﻿import os
+from datetime import date, timedelta
 
 import requests
 import streamlit as st
@@ -28,20 +28,9 @@ def api_get_classrooms():
     return data.get("results", data)
 
 
-def api_patch_student(student_id: int, payload: dict, photo_file=None):
+def api_patch_student(student_id: int, payload: dict):
     url = f"{API_URL}/students/{student_id}/"
-    if photo_file is not None:
-        files = {
-            "photo": (
-                getattr(photo_file, "name", "photo.jpg"),
-                photo_file.getvalue(),
-                getattr(photo_file, "type", "application/octet-stream"),
-            )
-        }
-        data = {k: v for k, v in payload.items() if v is not None}
-        r = requests.patch(url, headers=auth_headers(), data=data, files=files, timeout=20)
-    else:
-        r = requests.patch(url, headers=auth_headers() | {"Content-Type": "application/json"}, json=payload, timeout=20)
+    r = requests.patch(url, headers=auth_headers() | {"Content-Type": "application/json"}, json=payload, timeout=20)
     if r.status_code in (200, 202):
         return True, r.json()
     try:
@@ -50,20 +39,9 @@ def api_patch_student(student_id: int, payload: dict, photo_file=None):
         return False, {"detail": r.text}
 
 
-def api_post_student(payload: dict, photo_file=None):
+def api_post_student(payload: dict):
     url = f"{API_URL}/students/"
-    if photo_file is not None:
-        files = {
-            "photo": (
-                getattr(photo_file, "name", "photo.jpg"),
-                photo_file.getvalue(),
-                getattr(photo_file, "type", "application/octet-stream"),
-            )
-        }
-        data = {k: v for k, v in payload.items() if v is not None}
-        r = requests.post(url, headers=auth_headers(), data=data, files=files, timeout=20)
-    else:
-        r = requests.post(url, headers=auth_headers() | {"Content-Type": "application/json"}, json=payload, timeout=20)
+    r = requests.post(url, headers=auth_headers() | {"Content-Type": "application/json"}, json=payload, timeout=20)
     if r.status_code in (200, 201):
         return True, r.json()
     try:
@@ -120,7 +98,7 @@ def go_back():
 
 
 def main():
-    st.set_page_config(page_title="Alumno", page_icon="🧑‍🎓", layout="wide")
+    st.set_page_config(page_title="Alumno", page_icon="ðŸ§’", layout="wide")
     ensure_auth("ADMIN")
     render_sidebar_nav()
     render_topbar()
@@ -131,11 +109,11 @@ def main():
     # Barra superior con volver
     col1, col2 = st.columns([6, 1])
     with col2:
-        if st.button("← Volver"):
+        if st.button("â† Volver"):
             go_back()
 
     stu = {}
-    bdate_val = None
+    age_val = None
     active_classroom_id = None
     if not create_mode:
         if not sid:
@@ -149,13 +127,8 @@ def main():
             go_back()
             return
         st.title(f"Editar: {stu.get('first_name','')} {stu.get('last_name','')}")
-        try:
-            bd = stu.get("birth_date")
-            if bd:
-                bdate_val = datetime.fromisoformat(str(bd)).date()
-        except Exception:
-            bdate_val = None
-        # Mostrar matrícula activa actual
+        age_val = stu.get("age")
+        # Mostrar matrÃ­cula activa actual
         try:
             enrolls = api_get_enrollments(sid)
         except Exception:
@@ -167,61 +140,50 @@ def main():
                 break
         if active:
             active_classroom_id = active.get('classroom')
-            st.caption(f"Salón actual (activo): ID {active_classroom_id} · Inicio: {active.get('start_date') or '-'}")
+            st.caption(f"SalÃ³n actual (activo): ID {active_classroom_id} Â· Inicio: {active.get('start_date') or '-'}")
     else:
         st.title("Nuevo alumno")
 
     with st.form("student_form", clear_on_submit=False):
         col1, col2 = st.columns(2)
         with col1:
-            dni = st.text_input("DNI" + ("*" if create_mode else ""), value=stu.get("dni") or "", max_chars=15)
             first_name = st.text_input("Nombres" + ("*" if create_mode else ""), value=stu.get("first_name") or "")
             last_name = st.text_input("Apellidos" + ("*" if create_mode else ""), value=stu.get("last_name") or "")
-            email = st.text_input("Correo", value=stu.get("email") or "")
+            age = st.number_input("Edad" + ("*" if create_mode else ""), min_value=1, max_value=120, value=int(age_val or 7))
         with col2:
-            phone = st.text_input("Teléfono", value=stu.get("phone") or "")
             gender = st.selectbox(
-                "Género",
+                "GÃ©nero",
                 options=["", "M", "F", "O"],
                 index=["", "M", "F", "O"].index(stu.get("gender") or ""),
             )
-            bdate = st.date_input("Fecha de nacimiento", value=bdate_val)
 
-        # Foto: mostrar existente y permitir cambiar/subir
-        pcol1, pcol2 = st.columns([1, 3])
-        with pcol1:
-            if not create_mode and stu.get("photo"):
-                st.image(stu.get("photo"), width=96)
-        with pcol2:
-            photo_file = st.file_uploader("Foto (opcional)", type=["png", "jpg", "jpeg"], accept_multiple_files=False)
-
-        # Matrícula inicial (crear) o cambio de salón (editar)
+        # MatrÃ­cula inicial (crear) o cambio de salÃ³n (editar)
         selected_room_id = None
         start_d = None
         classrooms = api_get_classrooms()
         room_opts = [(c.get("id"), f"{c.get('academic_year')} - {c.get('grade')}{c.get('section')}") for c in classrooms]
         if create_mode:
             st.markdown("---")
-            st.subheader("Matrícula inicial")
+            st.subheader("MatrÃ­cula inicial")
             if room_opts:
-                ridx = st.selectbox("Salón*", options=list(range(len(room_opts))), format_func=lambda i: room_opts[i][1])
+                ridx = st.selectbox("SalÃ³n*", options=list(range(len(room_opts))), format_func=lambda i: room_opts[i][1])
                 selected_room_id = room_opts[ridx][0]
             else:
                 st.error("No hay salones creados")
             start_d = st.date_input("Fecha de inicio (opcional)", value=None)
         else:
-            # Cambio de salón opcional (solo uno activo)
+            # Cambio de salÃ³n opcional (solo uno activo)
             st.markdown("---")
-            st.subheader("Cambio de salón (opcional)")
+            st.subheader("Cambio de salÃ³n (opcional)")
             if room_opts:
                 ridx2 = st.selectbox(
-                    "Nuevo salón (opcional)",
+                    "Nuevo salÃ³n (opcional)",
                     options=[-1] + list(range(len(room_opts))),
                     format_func=lambda i: ("-- mantener --" if i == -1 else room_opts[i][1]),
                 )
                 if ridx2 != -1:
                     selected_room_id = room_opts[ridx2][0]
-                    start_d = st.date_input("Fecha de inicio en nuevo salón", value=date.today())
+                    start_d = st.date_input("Fecha de inicio en nuevo salÃ³n", value=date.today())
 
         csave, ccancel = st.columns([1, 1])
         save = csave.form_submit_button("Registrar" if create_mode else "Guardar cambios")
@@ -234,20 +196,17 @@ def main():
 
     if save:
         payload = {
-            "dni": dni,
             "first_name": first_name,
             "last_name": last_name,
-            "email": email,
-            "phone": phone,
+            "age": int(age),
             "gender": gender,
-            "birth_date": bdate.isoformat() if bdate else None,
         }
-        if create_mode and not all([dni, first_name, last_name, selected_room_id]):
+        if create_mode and not all([first_name, last_name, age, selected_room_id]):
             st.error("Completa los campos obligatorios (*)")
         else:
             with st.spinner("Guardando..."):
                 if create_mode:
-                    ok, data = api_post_student(payload, photo_file)
+                    ok, data = api_post_student(payload)
                     if ok:
                         new_id = data.get("id")
                         if new_id and selected_room_id:
@@ -265,12 +224,12 @@ def main():
                     else:
                         st.error(str(data))
                 else:
-                    ok, data = api_patch_student(sid, payload, photo_file)
+                    ok, data = api_patch_student(sid, payload)
                     if ok:
-                        # si se seleccionó nuevo salón, validar y migrar matrícula
+                        # si se seleccionÃ³ nuevo salÃ³n, validar y migrar matrÃ­cula
                         if selected_room_id:
                             if active_classroom_id and int(selected_room_id) == int(active_classroom_id):
-                                st.warning("El salón seleccionado es el mismo que el actual. No se realizaron cambios de matrícula.")
+                                st.warning("El salÃ³n seleccionado es el mismo que el actual. No se realizaron cambios de matrÃ­cula.")
                             else:
                                 try:
                                     enrolls = api_get_enrollments(sid)
@@ -282,7 +241,7 @@ def main():
                                         active = e
                                         break
                                 if active:
-                                    # cerrar matrícula activa un día antes del nuevo inicio
+                                    # cerrar matrÃ­cula activa un dÃ­a antes del nuevo inicio
                                     end_day = (start_d or date.today()) - timedelta(days=1)
                                     api_patch_enrollment(active.get("id"), {"end_date": end_day.isoformat()})
                                 api_post_enrollment(sid, selected_room_id, start_d)
@@ -300,3 +259,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+

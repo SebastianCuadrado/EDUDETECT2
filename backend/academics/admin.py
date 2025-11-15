@@ -4,8 +4,8 @@ from .models import Student, Classroom, Enrollment, TeacherAssignment, StudentTe
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ("id", "dni", "first_name", "last_name", "birth_date")
-    search_fields = ("dni", "first_name", "last_name")
+    list_display = ("id", "first_name", "last_name", "age", "gender", "created_at")
+    search_fields = ("first_name", "last_name")
 
 
 @admin.register(Classroom)
@@ -34,5 +34,4 @@ class StudentTeacherAdmin(admin.ModelAdmin):
 class EvaluationAdmin(admin.ModelAdmin):
     list_display = ("id", "student", "evaluated_by", "evaluated_at", "diagnosis", "probability")
     list_filter = ("diagnosis", "evaluated_at")
-    search_fields = ("student__first_name", "student__last_name", "student__dni")
-
+    search_fields = ("student__first_name", "student__last_name", "evaluated_by__username")

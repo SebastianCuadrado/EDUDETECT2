@@ -62,7 +62,7 @@ def enroll_student(student_id: int, classroom_id: int, start_date: date | None =
 
 
 def main():
-    st.set_page_config(page_title="Registrar Estudiante", page_icon="🧑‍🎓", layout="wide")
+    st.set_page_config(page_title="Registrar Estudiante", page_icon="🎓", layout="wide")
     ensure_auth("ADMIN")
     render_sidebar_nav()
     render_topbar()

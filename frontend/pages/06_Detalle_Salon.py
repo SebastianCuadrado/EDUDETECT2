@@ -53,7 +53,7 @@ def main():
     # Botón volver (arriba a la derecha)
     col1, col2 = st.columns([6, 1])
     with col2:
-        if st.button("← Volver"):
+        if st.button(" Volver"):
             try:
                 if hasattr(st, 'switch_page'):
                     st.switch_page('pages/05_Administrar_Salones.py')
@@ -98,7 +98,7 @@ def main():
                 except Exception:
                     st.write(f"- ID {e.get('student')}")
             if len(enrolls) > 50:
-                st.caption(f"… y {len(enrolls)-50} más")
+                st.caption(f" y {len(enrolls)-50} más")
 
 
 if __name__ == "__main__":

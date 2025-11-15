@@ -1,4 +1,4 @@
-import os
+﻿import os
 from datetime import date
 
 import requests
@@ -47,27 +47,27 @@ def _safe_go_back():
 
 
 def main():
-    st.set_page_config(page_title="Editar salón", page_icon="✏️", layout="wide")
+    st.set_page_config(page_title="Editar salÃ³n", page_icon="âœï¸", layout="wide")
     ensure_auth("ADMIN")
     render_sidebar_nav()
     render_topbar()
 
     room_id = st.session_state.get("selected_room_id")
     if not room_id:
-        st.warning("No se ha seleccionado un salón.")
+        st.warning("No se ha seleccionado un salÃ³n.")
         _safe_go_back()
 
-    # Botón volver
+    # BotÃ³n volver
     col1, col2 = st.columns([6, 1])
     with col2:
-        if st.button("← Volver"):
+        if st.button("â† Volver"):
             _safe_go_back()
 
     # Cargar datos actuales
     try:
         room = api_get(f"/classrooms/{room_id}/")
     except Exception as e:
-        st.error(f"No se pudo cargar el salón: {e}")
+        st.error(f"No se pudo cargar el salÃ³n: {e}")
         _safe_go_back()
         return
 
@@ -79,7 +79,7 @@ def main():
         c1, c2, c3 = st.columns(3)
         with c1:
             year = st.number_input(
-                "Año",
+                "AÃ±o",
                 min_value=2000,
                 max_value=2100,
                 value=int(room.get('academic_year') or date.today().year),
@@ -88,8 +88,8 @@ def main():
         with c2:
             grade = st.number_input("Grado", min_value=1, max_value=12, value=int(room.get('grade') or 1), step=1)
         with c3:
-            section = st.text_input("Sección", value=room.get('section') or "", max_chars=2)
-        name = st.text_input("Nombre del salón", value=room.get('name') or "")
+            section = st.text_input("SecciÃ³n", value=room.get('section') or "", max_chars=2)
+        name = st.text_input("Nombre del salÃ³n", value=room.get('name') or "")
         csave, ccancel = st.columns([1, 1])
         save = csave.form_submit_button("Guardar cambios")
         cancel = ccancel.form_submit_button("Cancelar")
@@ -107,7 +107,7 @@ def main():
         with st.spinner("Guardando..."):
             ok, data = api_patch(f"/classrooms/{room_id}/", payload)
             if ok:
-                st.success("Salón actualizado correctamente")
+                st.success("SalÃ³n actualizado correctamente")
                 _safe_go_back()
             else:
                 if isinstance(data, dict):
@@ -119,4 +119,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 

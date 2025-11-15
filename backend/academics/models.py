@@ -14,12 +14,8 @@ class Student(models.Model):
 
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
-    dni = models.CharField(max_length=15, unique=True)
-    birth_date = models.DateField(null=True, blank=True)
+    age = models.PositiveSmallIntegerField(null=True, blank=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True)
-    email = models.EmailField(blank=True)
-    phone = models.CharField(max_length=20, blank=True)
-    photo = models.ImageField(upload_to="students/", null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -91,9 +87,9 @@ class StudentTeacher(models.Model):
 
 class Evaluation(models.Model):
     DIAG_CHOICES = (
-        ("DISLEXIA", "Dislexia"),
-        ("RIESGO", "Riesgo"),
-        ("NORMAL", "Normal"),
+        ("BAJO", "Menos del 60% (Nivel Bajo)"),
+        ("MEDIO", "Entre 60% - 85% (Nivel Medio)"),
+        ("ALTO", "Más del 85% (Nivel Alto)"),
     )
 
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="evaluations")

@@ -94,7 +94,7 @@ def main():
     idx = 0
     with cols[idx]:
         with st.container(border=True):
-            st.markdown("### ➕")
+            st.markdown("### ")
             st.markdown("**Agregar salón**")
             if st.button("Nuevo salón"):
                 st.session_state.show_create_room = True

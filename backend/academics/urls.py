@@ -1,4 +1,5 @@
 from rest_framework.routers import DefaultRouter
+from django.urls import path
 from .views import (
     StudentViewSet,
     ClassroomViewSet,
@@ -6,6 +7,7 @@ from .views import (
     TeacherAssignmentViewSet,
     StudentTeacherViewSet,
     EvaluationViewSet,
+    EvaluateQuestionnaireView,
 )
 
 
@@ -17,5 +19,6 @@ router.register(r"teacher-assignments", TeacherAssignmentViewSet, basename="teac
 router.register(r"student-teachers", StudentTeacherViewSet, basename="student-teacher")
 router.register(r"evaluations", EvaluationViewSet, basename="evaluation")
 
-urlpatterns = router.urls
-
+urlpatterns = router.urls + [
+    path("ml/evaluate/", EvaluateQuestionnaireView.as_view(), name="ml-evaluate"),
+]
