@@ -1,12 +1,13 @@
 from pathlib import Path
 import os
+import dj_database_url
 from dotenv import load_dotenv
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
 DEBUG = os.getenv("DEBUG", "0") == "1"
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["edudetect.herokuapp.com", "api.edudetect.com"]
 
 INSTALLED_APPS = [
     # Django apps necesarias para auth/admin
@@ -56,6 +57,8 @@ TEMPLATES = [
 # Static (mínimo para admin)
 STATIC_URL = "static/"
 
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 # URLConf raíz del proyecto
 ROOT_URLCONF = "backend.urls"
 
@@ -81,6 +84,7 @@ REST_FRAMEWORK = {
 # CORS (desarrollo)
 CORS_ALLOW_ALL_ORIGINS = True
 
+'''
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -92,6 +96,16 @@ DATABASES = {
         "CONN_MAX_AGE": 60,  # pooling sencillo
     }
 }
+'''
+
+DATABASES = {
+    "default": dj_database_url.config(
+        default=os.getenv("DATABASE_URL"),
+        conn_max_age=600,
+        ssl_require=True,
+    )
+}
+
 
 # Custom user model
 AUTH_USER_MODEL = "accounts.User"
