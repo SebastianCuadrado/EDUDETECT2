@@ -10,7 +10,7 @@ class User(AbstractUser):
     # Override email to enforce uniqueness
     email = models.EmailField("email address", unique=True)
 
-    dni = models.CharField(max_length=15, unique=True)
+    dni = models.CharField(max_length=15, blank=True)
     phone = models.CharField(max_length=20, blank=True)
     role = models.CharField(max_length=20, choices=Roles.choices, default=Roles.DOCENTE)
 
