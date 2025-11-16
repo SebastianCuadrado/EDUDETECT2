@@ -7,7 +7,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
 DEBUG = os.getenv("DEBUG", "0") == "1"
-ALLOWED_HOSTS = ["edudetect.herokuapp.com", "api.edudetect.com"]
+ALLOWED_HOSTS = ["edudetect-backend-833dd0445674.herokuapp.com", "api.edudetect.com"]
 
 INSTALLED_APPS = [
     # Django apps necesarias para auth/admin
