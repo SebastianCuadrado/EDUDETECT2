@@ -1,4 +1,4 @@
-﻿import os
+import os
 import time
 from pathlib import Path
 
@@ -36,35 +36,32 @@ st.markdown(
         border-radius: 28px;
         padding: 36px;
     }
-    .card { background: var(--card-bg); border: 1px solid rgba(128,128,128,0.25); border-radius: 16px; padding: 32px 28px; box-shadow: 0 12px 28px rgba(0,0,0,0.16); }
-    .logo-column {
-        padding-left: 15%;
-        padding-right: 4%;
+    .login-panel [data-testid="column"] {
+        padding-top: 8px;
+        padding-bottom: 8px;
+    }
+    .login-panel [data-testid="column"]:first-child {
+        padding-left: 14%;
+        padding-right: 5%;
         display: flex;
         justify-content: center;
     }
-    .brand-box {
-        background: var(--card-bg);
-        border: 1px dashed rgba(128,128,128,0.35);
-        border-radius: 16px;
-        padding: 32px 24px;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 20px;
+    .login-panel [data-testid="column"]:first-child > div {
         width: 100%;
-        margin: 0 auto;
     }
-    .brand-box img { display: block; margin: 0 auto; max-width: 260px;}
-    .logo-circle { width: 220px; height: 220px; border-radius: 999px; background: linear-gradient(180deg, rgba(180,180,180,.6), rgba(140,140,140,.6)); display: grid; place-items: center; color: #222; font-weight: 600 }
+    .card { background: var(--card-bg); border: 1px solid rgba(128,128,128,0.25); border-radius: 16px; padding: 32px 28px; box-shadow: 0 12px 28px rgba(0,0,0,0.16); }
+    .brand-box { background: var(--card-bg); border: 1px dashed rgba(128,128,128,0.35); border-radius: 16px; padding: 32px 24px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
+    .brand-box img { display: block; margin: 0 auto; max-width: 260px; }
+    .logo-circle { width: 220px; height: 220px; border-radius: 999px; background: linear-gradient(180deg, rgba(180,180,180,.6), rgba(140,140,140,.6)); display: grid; place-items: center; color: #222; font-weight: 600; }
     .tagline { margin: 0; padding: 14px 20px; border-radius: 12px; background: rgba(120,120,120,.22); font-weight: 600; }
     .login-title { text-align: center; letter-spacing: .04em; font-weight: 700; margin-bottom: 1rem; }
     .small-muted { color: rgba(180,180,180,.9); font-size: .9rem; }
     @media (max-width: 980px) {
         .login-panel { padding: 24px; }
-        .logo-column { padding-left: 0; padding-right: 0; }
+        .login-panel [data-testid="column"]:first-child {
+            padding-left: 0;
+            padding-right: 0;
+        }
     }
     </style>
     """,
@@ -88,19 +85,17 @@ with st.container():
     st.markdown('<div class="login-panel">', unsafe_allow_html=True)
     col_left, col_right = st.columns([1, 1], gap="large")
 
-with col_left:
-    st.markdown('<div class="logo-column">', unsafe_allow_html=True)
-    st.markdown('<div class="brand-box">', unsafe_allow_html=True)
-    if logo_path:
-        st.image(str(logo_path), width=260)
-    else:
-        st.markdown('<div class="logo-circle">Logo</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="tagline">Prevención temprana para un futuro brillante</div>',
-        unsafe_allow_html=True,
-    )
-    st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    with col_left:
+        st.markdown('<div class="brand-box">', unsafe_allow_html=True)
+        if logo_path:
+            st.image(str(logo_path), width=260)
+        else:
+            st.markdown('<div class="logo-circle">Logo</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="tagline">Prevención temprana para un futuro brillante</div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with col_right:
         st.markdown('<div class="card">', unsafe_allow_html=True)
