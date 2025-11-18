@@ -58,6 +58,7 @@ def main():
     render_topbar()
     if st.session_state.pop("force_refresh_students", False):
         st.session_state.pop("admin_students_cache", None)
+        _safe_rerun()
 
     st.title("Gesti\u00f3n de Alumnos")
 
