@@ -38,8 +38,8 @@ st.markdown(
     }
     .card { background: var(--card-bg); border: 1px solid rgba(128,128,128,0.25); border-radius: 16px; padding: 32px 28px; box-shadow: 0 12px 28px rgba(0,0,0,0.16); }
     .brand-box { background: var(--card-bg); border: 1px dashed rgba(128,128,128,0.35); border-radius: 16px; padding: 32px 24px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 20px; }
-    .brand-box img { display: block; margin: 0 auto; max-width: 260px; padding-right: 20px }
-    .logo-circle { width: 220px; height: 220px; border-radius: 999px; background: linear-gradient(180deg, rgba(180,180,180,.6), rgba(140,140,140,.6)); display: grid; place-items: center; color: #222; font-weight: 600; }
+    .brand-box img { display: block; margin: 0 auto; max-width: 260px }
+    .logo-circle { width: 220px; height: 220px; border-radius: 999px; background: linear-gradient(180deg, rgba(180,180,180,.6), rgba(140,140,140,.6)); display: grid; place-items: center; color: #222; font-weight: 600; padding-left:15%}
     .tagline { margin: 0; padding: 14px 20px; border-radius: 12px; background: rgba(120,120,120,.22); font-weight: 600; }
     .login-title { text-align: center; letter-spacing: .04em; font-weight: 700; margin-bottom: 1rem; }
     .small-muted { color: rgba(180,180,180,.9); font-size: .9rem; }
