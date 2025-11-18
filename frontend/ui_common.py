@@ -12,27 +12,26 @@ def _auth_store() -> Dict[str, Dict[str, Any]]:
 
 
 def _get_query_params() -> Dict[str, Any]:
-    getter = getattr(st, "experimental_get_query_params", None)
-    if getter:
-        return getter()
     try:
         return dict(st.query_params)
     except Exception:
+        getter = getattr(st, "experimental_get_query_params", None)
+        if getter:
+            return getter()
         return {}
 
 
 def _set_query_params(params: Dict[str, Any]):
-    setter = getattr(st, "experimental_set_query_params", None)
-    if setter:
-        setter(**params)
-        return
     try:
         qp = st.query_params
         qp.clear()
         for key, value in params.items():
             qp[key] = value
+        return
     except Exception:
-        pass
+        setter = getattr(st, "experimental_set_query_params", None)
+        if setter:
+            setter(**params)
 
 
 def hydrate_auth_from_query():
