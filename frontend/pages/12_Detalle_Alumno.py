@@ -99,7 +99,16 @@ def render_header(student, enrollment):
     info_cols[1].metric("Género", student.get("gender", "-"))
     if enrollment:
         cls = enrollment.get("classroom_detail") or {}
-        classroom_label = cls.get("name") or f"{cls.get('grade','')}° {cls.get('section','')}".strip()
+        classroom_label = cls.get("name") or ""
+        if not classroom_label:
+            grade = cls.get("grade")
+            section = cls.get("section")
+            parts = []
+            if grade not in (None, ""):
+                parts.append(f"{grade}°")
+            if section:
+                parts.append(section)
+            classroom_label = " ".join(parts).strip()
         info_cols[2].metric("Salón", classroom_label or "No asignado")
         info_cols[3].metric("Inicio", enrollment.get("start_date") or "-")
     else:
