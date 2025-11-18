@@ -36,6 +36,15 @@ def scoped_students_qs(user):
     )
 
 
+def scoped_classrooms_qs(user):
+    if getattr(user, "role", None) == "ADMIN" or getattr(user, "is_superuser", False):
+        return Classroom.objects.all()
+    return Classroom.objects.filter(
+        models.Q(teacher_assignments__teacher=user)
+        | models.Q(enrollments__student__teacher_links__teacher=user)
+    ).distinct()
+
+
 class IsAdminOrTeacher(permissions.BasePermission):
     """Mantiene compatibilidad para evaluaciones y otras vistas.
     Autenticado: acceso; objeto: debe estar en alcance o ser ADMIN.
@@ -77,6 +86,8 @@ class IsAdminOrScopedReadOnly(permissions.BasePermission):
                 return scoped.filter(id=obj.student_id).exists()
             if isinstance(obj, Enrollment):
                 return scoped.filter(id=obj.student_id).exists()
+            if isinstance(obj, Classroom):
+                return scoped_classrooms_qs(request.user).filter(id=obj.id).exists()
             return False
         # Es escritura: ya pasó por has_permission (ADMIN)
         return True
@@ -137,12 +148,21 @@ class StudentViewSet(viewsets.ModelViewSet):
 
 
 class ClassroomViewSet(viewsets.ModelViewSet):
-    queryset = Classroom.objects.all().order_by("-academic_year", "grade", "section")
     serializer_class = ClassroomSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsAdminOrScopedReadOnly]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["school", "section"]
     ordering_fields = ["academic_year", "grade", "section"]
+
+    def get_queryset(self):
+        qs = scoped_classrooms_qs(self.request.user)
+        school = self.request.query_params.get("school")
+        section = self.request.query_params.get("section")
+        if school:
+            qs = qs.filter(school__icontains=school)
+        if section:
+            qs = qs.filter(section__icontains=section)
+        return qs.order_by("-academic_year", "grade", "section")
 
 
 class EnrollmentViewSet(viewsets.ModelViewSet):
