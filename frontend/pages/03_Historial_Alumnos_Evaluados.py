@@ -80,6 +80,41 @@ def create_evaluation(student_id: int, evaluated_at: date, diagnosis: str, notes
         return False, {"detail": r.text}
 
 
+def _safe_navigate(target_page: str):
+    try:
+        if hasattr(st, "switch_page"):
+            st.switch_page(target_page)
+            return
+    except Exception:
+        pass
+    try:
+        st.experimental_rerun()
+    except Exception:
+        pass
+
+
+def go_to_student_detail(student_id: int):
+    st.session_state.view_student_detail_id = student_id
+    _safe_navigate("pages/12_Detalle_Alumno.py")
+
+
+def render_teacher_list(students):
+    st.markdown("### Mis alumnos")
+    st.markdown("---")
+    if not students:
+        st.info("Aún no tienes alumnos registrados en tus salones.")
+        return
+    for stu in students:
+        with st.container(border=True):
+            c1, c2, c3, c4 = st.columns([3, 2, 1, 1])
+            c1.write(f"{stu.get('first_name','')} {stu.get('last_name','')}")
+            age = stu.get("age")
+            c2.caption(f"Edad: {'N/D' if age in (None, '') else age}")
+            c3.caption(f"Género: {stu.get('gender','') or '-'}")
+            if c4.button("Ver detalle", key=f"doc_detail_{stu.get('id')}"):
+                go_to_student_detail(stu.get("id"))
+
+
 def main():
     st.set_page_config(page_title="Alumnos", page_icon="📋", layout="wide")
     ensure_auth()
@@ -263,36 +298,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-def _safe_navigate(target_page: str):
-    try:
-        if hasattr(st, "switch_page"):
-            st.switch_page(target_page)
-            return
-    except Exception:
-        pass
-    try:
-        st.experimental_rerun()
-    except Exception:
-        pass
-
-
-def go_to_student_detail(student_id: int):
-    st.session_state.view_student_detail_id = student_id
-    _safe_navigate("pages/12_Detalle_Alumno.py")
-
-
-def render_teacher_list(students):
-    st.markdown("### Mis alumnos")
-    st.markdown("---")
-    if not students:
-        st.info("Aún no tienes alumnos registrados en tus salones.")
-        return
-    for stu in students:
-        with st.container(border=True):
-            c1, c2, c3, c4 = st.columns([3, 2, 1, 1])
-            c1.write(f"{stu.get('first_name','')} {stu.get('last_name','')}")
-            age = stu.get("age")
-            c2.caption(f"Edad: {'N/D' if age in (None, '') else age}")
-            c3.caption(f"Género: {stu.get('gender','') or '-'}")
-            if c4.button("Ver detalle", key=f"doc_detail_{stu.get('id')}"):
-                go_to_student_detail(stu.get("id"))
