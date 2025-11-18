@@ -140,7 +140,7 @@ def main():
                 break
         if active:
             active_classroom_id = active.get('classroom')
-            st.caption(f"Sal³n actual (activo): ID {active_classroom_id} · Inicio: {active.get('start_date') or '-'}")
+            st.caption(f"Salón actual (activo): ID {active_classroom_id} · Inicio: {active.get('start_date') or '-'}")
     else:
         st.title("Nuevo alumno")
 
