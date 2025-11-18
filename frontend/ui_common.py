@@ -1,14 +1,9 @@
+import base64
+import json
 import time
-import uuid
 from typing import Any, Dict
 
 import streamlit as st
-
-
-@st.cache_resource
-def _auth_store() -> Dict[str, Dict[str, Any]]:
-    """Simple in-memory store that survives reruns to keep tokens per session id."""
-    return {}
 
 
 def _get_query_params() -> Dict[str, Any]:
@@ -34,49 +29,66 @@ def _set_query_params(params: Dict[str, Any]):
             setter(**params)
 
 
+def _encode_payload(data: Dict[str, Any]) -> str | None:
+    try:
+        raw = json.dumps(data).encode("utf-8")
+        return base64.urlsafe_b64encode(raw).decode("ascii")
+    except Exception:
+        return None
+
+
+def _decode_payload(raw: str):
+    try:
+        data = base64.urlsafe_b64decode(raw.encode("ascii")).decode("utf-8")
+        return json.loads(data)
+    except Exception:
+        return None
+
+
 def hydrate_auth_from_query():
     if st.session_state.get("auth"):
         return
     params = _get_query_params()
-    raw = params.get("session")
+    raw = params.get("auth")
     if isinstance(raw, list):
         raw = raw[0]
-    session_id = raw or st.session_state.get("session_id")
-    if not session_id:
+    if not raw:
         return
-    data = _auth_store().get(session_id)
-    if not data:
+    data = _decode_payload(raw)
+    if not data or not data.get("token"):
         return
-    for key, value in data.items():
-        st.session_state[key] = value
-    st.session_state["session_id"] = session_id
+    for key in ("auth", "username", "token", "user"):
+        if key in data:
+            st.session_state[key] = data[key]
 
 
 def persist_auth_state():
     if not st.session_state.get("auth"):
         return
-    session_id = st.session_state.get("session_id") or uuid.uuid4().hex
-    st.session_state["session_id"] = session_id
-    payload = {key: st.session_state.get(key) for key in ("auth", "username", "token", "user")}
-    _auth_store()[session_id] = payload
+    payload = {
+        "auth": True,
+        "username": st.session_state.get("username"),
+        "token": st.session_state.get("token"),
+        "user": st.session_state.get("user"),
+    }
+    encoded = _encode_payload(payload)
+    if not encoded:
+        return
     params = _get_query_params()
-    params["session"] = session_id
+    params["auth"] = encoded
     _set_query_params(params)
 
 
 def clear_persisted_auth():
-    session_id = st.session_state.get("session_id")
-    if session_id:
-        _auth_store().pop(session_id, None)
     params = _get_query_params()
-    if "session" in params:
-        params.pop("session")
+    if "auth" in params:
+        params.pop("auth")
         _set_query_params(params)
 
 
 def logout():
     clear_persisted_auth()
-    for key in ("auth", "username", "token", "user", "session_id"):
+    for key in ("auth", "username", "token", "user"):
         if key in st.session_state:
             del st.session_state[key]
     st.success("Sesión cerrada")
