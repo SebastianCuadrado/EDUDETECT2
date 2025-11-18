@@ -53,6 +53,11 @@ def hydrate_auth_from_query():
     if isinstance(raw, list):
         raw = raw[0]
     if not raw:
+        raw = st.session_state.get("_auth_payload")
+        if raw:
+            params["auth"] = raw
+            _set_query_params(params)
+    if not raw:
         return
     data = _decode_payload(raw)
     if not data or not data.get("token"):
@@ -60,6 +65,7 @@ def hydrate_auth_from_query():
     for key in ("auth", "username", "token", "user"):
         if key in data:
             st.session_state[key] = data[key]
+    st.session_state["_auth_payload"] = raw
 
 
 def persist_auth_state():
@@ -77,6 +83,7 @@ def persist_auth_state():
     params = _get_query_params()
     params["auth"] = encoded
     _set_query_params(params)
+    st.session_state["_auth_payload"] = encoded
 
 
 def clear_persisted_auth():
@@ -84,11 +91,13 @@ def clear_persisted_auth():
     if "auth" in params:
         params.pop("auth")
         _set_query_params(params)
+    if "_auth_payload" in st.session_state:
+        del st.session_state["_auth_payload"]
 
 
 def logout():
     clear_persisted_auth()
-    for key in ("auth", "username", "token", "user"):
+    for key in ("auth", "username", "token", "user", "_auth_payload"):
         if key in st.session_state:
             del st.session_state[key]
     st.success("Sesión cerrada")

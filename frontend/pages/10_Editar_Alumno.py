@@ -212,6 +212,7 @@ def main():
                         if new_id and selected_room_id:
                             api_post_enrollment(new_id, selected_room_id, start_d)
                         st.success("Alumno creado")
+                        st.session_state["force_refresh_students"] = True
                         # limpiar caches para que el listado recargue y muestre el nuevo alumno
                         try:
                             if 'admin_students_cache' in st.session_state:
@@ -246,6 +247,7 @@ def main():
                                     api_patch_enrollment(active.get("id"), {"end_date": end_day.isoformat()})
                                 api_post_enrollment(sid, selected_room_id, start_d)
                         st.success("Alumno actualizado")
+                        st.session_state["force_refresh_students"] = True
                         # limpiar cache para reflejar cambios al volver
                         try:
                             if 'admin_students_cache' in st.session_state:

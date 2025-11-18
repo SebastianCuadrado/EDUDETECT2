@@ -56,6 +56,8 @@ def main():
     ensure_auth("ADMIN")
     render_sidebar_nav()
     render_topbar()
+    if st.session_state.pop("force_refresh_students", False):
+        st.session_state.pop("admin_students_cache", None)
 
     st.title("Gesti\u00f3n de Alumnos")
 
@@ -110,6 +112,7 @@ def main():
                 ok, msg = delete_student(stu.get('id'))
                 if ok:
                     st.success("Alumno eliminado")
+                    st.session_state["force_refresh_students"] = True
                     try:
                         if 'admin_students_cache' in st.session_state:
                             del st.session_state['admin_students_cache']
