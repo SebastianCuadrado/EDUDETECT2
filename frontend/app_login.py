@@ -37,13 +37,17 @@ st.markdown(
         padding: 36px;
     }
     .card { background: var(--card-bg); border: 1px solid rgba(128,128,128,0.25); border-radius: 16px; padding: 32px 28px; box-shadow: 0 12px 28px rgba(0,0,0,0.16); }
+    .logo-column {
+        padding-left: 15%;
+        padding-right: 4%;
+        display: flex;
+        justify-content: center;
+    }
     .brand-box {
         background: var(--card-bg);
         border: 1px dashed rgba(128,128,128,0.35);
         border-radius: 16px;
         padding: 32px 24px;
-        padding-left: 15% !important;
-        padding-right: 15% !important;
         text-align: center;
         display: flex;
         flex-direction: column;
@@ -60,6 +64,7 @@ st.markdown(
     .small-muted { color: rgba(180,180,180,.9); font-size: .9rem; }
     @media (max-width: 980px) {
         .login-panel { padding: 24px; }
+        .logo-column { padding-left: 0; padding-right: 0; }
     }
     </style>
     """,
@@ -83,17 +88,19 @@ with st.container():
     st.markdown('<div class="login-panel">', unsafe_allow_html=True)
     col_left, col_right = st.columns([1, 1], gap="large")
 
-    with col_left:
-        st.markdown('<div class="brand-box">', unsafe_allow_html=True)
-        if logo_path:
-            st.image(str(logo_path), width=260)
-        else:
-            st.markdown('<div class="logo-circle">Logo</div>', unsafe_allow_html=True)
-        st.markdown(
-            '<div class="tagline">Prevención temprana para un futuro brillante</div>',
-            unsafe_allow_html=True,
-        )
-        st.markdown('</div>', unsafe_allow_html=True)
+with col_left:
+    st.markdown('<div class="logo-column">', unsafe_allow_html=True)
+    st.markdown('<div class="brand-box">', unsafe_allow_html=True)
+    if logo_path:
+        st.image(str(logo_path), width=260)
+    else:
+        st.markdown('<div class="logo-circle">Logo</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="tagline">Prevención temprana para un futuro brillante</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
     with col_right:
         st.markdown('<div class="card">', unsafe_allow_html=True)
