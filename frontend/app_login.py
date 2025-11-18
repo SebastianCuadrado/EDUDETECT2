@@ -42,8 +42,8 @@ st.markdown(
         border: 1px dashed rgba(128,128,128,0.35);
         border-radius: 16px;
         padding: 32px 24px;
-        padding-left: 15%;
-        padding-right: 15%;
+        padding-left: 15% !important;
+        padding-right: 15% !important;
         text-align: center;
         display: flex;
         flex-direction: column;
