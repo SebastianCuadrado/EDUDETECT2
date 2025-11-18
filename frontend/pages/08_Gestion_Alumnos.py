@@ -1,4 +1,4 @@
-﻿import os
+import os
 from datetime import date
 
 import requests
@@ -52,26 +52,26 @@ def delete_student(student_id: int):
 
 
 def main():
-    st.set_page_config(page_title="GestiÃ³n de Alumnos", page_icon="ðŸ‘¥", layout="wide")
+    st.set_page_config(page_title="Gesti\u00f3n de Alumnos", page_icon="\U0001F4DA", layout="wide")
     ensure_auth("ADMIN")
     render_sidebar_nav()
     render_topbar()
 
-    st.title("GestiÃ³n de Alumnos")
+    st.title("Gesti\u00f3n de Alumnos")
 
     # Filtros
     c1, c2, c3, c4, c5 = st.columns([3, 1, 1, 1, 1])
     query = c1.text_input("Buscar", placeholder="nombre o apellido")
-    y = c2.number_input("AÃ±o", min_value=2000, max_value=2100, value=date.today().year, step=1)
+    y = c2.number_input("A\u00f1o", min_value=2000, max_value=2100, value=date.today().year, step=1)
     g = c3.number_input("Grado", min_value=1, max_value=12, value=1, step=1)
-    s = c4.text_input("SecciÃ³n", max_chars=2, value="A")
+    s = c4.text_input("Secci\u00f3n", max_chars=2, value="A")
     do = c5.button("Filtrar")
 
     if do or "admin_students_cache" not in st.session_state:
         st.session_state.admin_students_cache = fetch_students(query, y, g, s)
     students = st.session_state.get("admin_students_cache", [])
 
-    # Crear nuevo alumno: navega a la pÃ¡gina unificada de ediciÃ³n/creaciÃ³n
+    # Crear nuevo alumno: navega a la p\u00e1gina unificada de edici\u00f3n/creaci\u00f3n
     st.markdown("---")
     new_col, _ = st.columns([1, 6])
     if new_col.button("Nuevo alumno"):
@@ -94,7 +94,7 @@ def main():
             c1.write(f"{stu.get('first_name','')} {stu.get('last_name','')}")
             age = stu.get('age')
             c2.caption(f"Edad: {'N/D' if age in (None, '') else age}")
-            c3.caption(f"GÃ©nero: {stu.get('gender','') or '-'}")
+            c3.caption(f"G\u00e9nero: {stu.get('gender','') or '-'}")
             if c4.button("Editar", key=f"stu_edit_{stu.get('id')}"):
                 st.session_state.selected_student_id = stu.get('id')
                 st.session_state.create_mode = False
