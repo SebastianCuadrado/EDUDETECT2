@@ -70,10 +70,13 @@ class IsAdminOrScopedReadOnly(permissions.BasePermission):
             role = getattr(request.user, "role", None)
             if role == "ADMIN" or request.user.is_superuser:
                 return True
+            scoped = scoped_students_qs(request.user)
             if isinstance(obj, Student):
-                return scoped_students_qs(request.user).filter(id=obj.id).exists()
+                return scoped.filter(id=obj.id).exists()
             if isinstance(obj, Evaluation):
-                return scoped_students_qs(request.user).filter(id=obj.student_id).exists()
+                return scoped.filter(id=obj.student_id).exists()
+            if isinstance(obj, Enrollment):
+                return scoped.filter(id=obj.student_id).exists()
             return False
         # Es escritura: ya pasó por has_permission (ADMIN)
         return True
@@ -144,12 +147,16 @@ class ClassroomViewSet(viewsets.ModelViewSet):
 
 class EnrollmentViewSet(viewsets.ModelViewSet):
     serializer_class = EnrollmentSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsAdminOrScopedReadOnly]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["id", "start_date", "end_date"]
 
     def get_queryset(self):
+        user = self.request.user
         qs = Enrollment.objects.all()
+        role = getattr(user, "role", None)
+        if role != "ADMIN" and not user.is_superuser:
+            qs = qs.filter(student__in=scoped_students_qs(user))
         classroom = self.request.query_params.get("classroom")
         student = self.request.query_params.get("student")
         if classroom:
