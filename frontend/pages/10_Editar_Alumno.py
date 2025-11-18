@@ -152,7 +152,7 @@ def main():
             age = st.number_input("Edad" + ("*" if create_mode else ""), min_value=1, max_value=120, value=int(age_val or 7))
         with col2:
             gender = st.selectbox(
-                "G©nero",
+                "Género",
                 options=["", "M", "F", "O"],
                 index=["", "M", "F", "O"].index(stu.get("gender") or ""),
             )
@@ -164,9 +164,9 @@ def main():
         room_opts = [(c.get("id"), f"{c.get('academic_year')} - {c.get('grade')}{c.get('section')}") for c in classrooms]
         if create_mode:
             st.markdown("---")
-            st.subheader("Matr­cula inicial")
+            st.subheader("Matrí­cula inicial")
             if room_opts:
-                ridx = st.selectbox("Sal³n*", options=list(range(len(room_opts))), format_func=lambda i: room_opts[i][1])
+                ridx = st.selectbox("Salón*", options=list(range(len(room_opts))), format_func=lambda i: room_opts[i][1])
                 selected_room_id = room_opts[ridx][0]
             else:
                 st.error("No hay salones creados")
@@ -174,16 +174,16 @@ def main():
         else:
             # Cambio de sal³n opcional (solo uno activo)
             st.markdown("---")
-            st.subheader("Cambio de sal³n (opcional)")
+            st.subheader("Cambio de salón (opcional)")
             if room_opts:
                 ridx2 = st.selectbox(
-                    "Nuevo sal³n (opcional)",
+                    "Nuevo salón (opcional)",
                     options=[-1] + list(range(len(room_opts))),
                     format_func=lambda i: ("-- mantener --" if i == -1 else room_opts[i][1]),
                 )
                 if ridx2 != -1:
                     selected_room_id = room_opts[ridx2][0]
-                    start_d = st.date_input("Fecha de inicio en nuevo sal³n", value=date.today())
+                    start_d = st.date_input("Fecha de inicio en nuevo salón", value=date.today())
 
         csave, ccancel = st.columns([1, 1])
         save = csave.form_submit_button("Registrar" if create_mode else "Guardar cambios")
@@ -229,7 +229,7 @@ def main():
                         # si se seleccion³ nuevo sal³n, validar y migrar matr­cula
                         if selected_room_id:
                             if active_classroom_id and int(selected_room_id) == int(active_classroom_id):
-                                st.warning("El sal³n seleccionado es el mismo que el actual. No se realizaron cambios de matr­cula.")
+                                st.warning("El salón seleccionado es el mismo que el actual. No se realizaron cambios de matr­cula.")
                             else:
                                 try:
                                     enrolls = api_get_enrollments(sid)
