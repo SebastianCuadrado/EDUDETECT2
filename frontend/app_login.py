@@ -35,7 +35,7 @@ st.markdown(
     }
     .left-pane { text-align: center; }
     .left-pane img { display: block; margin: 0 auto; max-width: 260px; }
-    .logo-circle { padding-left: 10px; width: 220px; height: 220px; border-radius: 999px; background: linear-gradient(180deg, rgba(180,180,180,.6), rgba(140,140,140,.6)); display: grid; place-items: center; color: #222; font-weight: 600; }
+    .logo-circle { padding-left: 10px; width: 320px; height: 280px; border-radius: 999px; background: linear-gradient(180deg, rgba(180,180,180,.6), rgba(140,140,140,.6)); display: grid; place-items: center; color: #222; font-weight: 600; }
     .tagline { margin: 16px auto 0 auto; padding: 0; font-weight: 600; text-align: center; }
     .card { background: var(--card-bg); border: 1px solid rgba(128,128,128,0.25); border-radius: 16px; padding: 32px 28px; box-shadow: 0 12px 28px rgba(0,0,0,0.16); }
     .login-title { text-align: center; letter-spacing: .04em; font-weight: 700; margin-bottom: 1rem; }
