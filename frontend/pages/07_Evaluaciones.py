@@ -65,8 +65,10 @@ def create_evaluation(student_id: int, evaluated_at: date, diagnosis: str, notes
         return False, {"detail": r.text}
 
 
-def ml_evaluate(student_id: int, answers: list[str]):
+def ml_evaluate(student_id: int, answers: list[str], grade: int | None = None):
     payload = {"student": student_id, "answers": answers}
+    if grade is not None:
+        payload["grade"] = grade
     r = requests.post(
         f"{API_URL}/ml/evaluate/",
         headers=auth_headers() | {"Content-Type": "application/json"},
@@ -134,7 +136,7 @@ def page_new():
         return
 
     with st.form("eval_form", clear_on_submit=False):
-        col1, col2 = st.columns([3, 1])
+        col1, col2, col3 = st.columns([3, 1.2, 1])
         with col1:
             student_idx = st.selectbox(
                 "Selecciona al alumno",
@@ -143,6 +145,8 @@ def page_new():
             )
         with col2:
             eval_date = st.date_input("Fecha de evaluación", value=date.today())
+        with col3:
+            grade_val = st.number_input("Grado", min_value=1, max_value=12, value=1, step=1)
 
         st.divider()
         st.caption("Escala: 1=NUNCA, 2=RARA VEZ, 3=A VECES, 4=FRECUENTEMENTE, 5=SIEMPRE")
@@ -209,7 +213,7 @@ def page_new():
     if get_diag:
         sid = options[student_idx][0]
         answers_txt = [NUM_TO_TXT.get(v, "NUNCA") for v in responses_num]
-        ok, data = ml_evaluate(sid, answers_txt)
+        ok, data = ml_evaluate(sid, answers_txt, grade_val)
         if not ok:
             detail = data.get("detail") if isinstance(data, dict) else str(data)
             st.error(f"No se pudo obtener diagnóstico del modelo: {detail}")
@@ -275,4 +279,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

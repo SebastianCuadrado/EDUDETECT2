@@ -45,6 +45,17 @@ def scoped_classrooms_qs(user):
     ).distinct()
 
 
+def current_student_grade(student_id: int):
+    enrollment = (
+        Enrollment.objects.filter(student_id=student_id, end_date__isnull=True)
+        .order_by("-start_date", "-id")
+        .first()
+    )
+    if enrollment and enrollment.classroom:
+        return enrollment.classroom.grade
+    return None
+
+
 class IsAdminOrTeacher(permissions.BasePermission):
     """Mantiene compatibilidad para evaluaciones y otras vistas.
     Autenticado: acceso; objeto: debe estar en alcance o ser ADMIN.
@@ -244,8 +255,16 @@ class EvaluateQuestionnaireView(APIView):
         if not scoped_students_qs(request.user).filter(id=student.id).exists():
             return Response({"detail": "Sin permiso para evaluar a este alumno"}, status=status.HTTP_403_FORBIDDEN)
 
+        grade = data.get("grade")
+        if grade is None:
+            grade = current_student_grade(student.id)
+
         try:
-            diagnosis, probability, version = ml_predict(data["answers"], age=getattr(student, "age", None))
+            diagnosis, probability, version = ml_predict(
+                data["answers"],
+                age=getattr(student, "age", None),
+                grade=grade,
+            )
         except Exception as e:
             return Response({"detail": f"Error de inferencia: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

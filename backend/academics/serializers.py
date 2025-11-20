@@ -103,3 +103,4 @@ class EvaluationInferenceSerializer(serializers.Serializer):
         max_length=30,
     )
     notes = serializers.CharField(allow_blank=True, required=False)
+    grade = serializers.IntegerField(required=False, allow_null=True, min_value=1, max_value=12)

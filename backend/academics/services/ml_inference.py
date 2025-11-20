@@ -73,13 +73,15 @@ def _load_artifacts():
         _version = os.getenv("MODEL_VERSION", os.path.basename(model_path))
 
 
-def _build_features(age: Optional[int], answers: List[str]) -> np.ndarray:
+def _build_features(age: Optional[int], grade: Optional[int], answers: List[str]) -> np.ndarray:
     base = int(os.getenv("ML_LIKERT_BASE", "1"))  # 0 → [0..4], 1 → [1..5]
     default_age = int(os.getenv("ML_DEFAULT_AGE", "8"))
+    default_grade = int(os.getenv("ML_DEFAULT_GRADE", "1"))
     age_val = float(age if age is not None else default_age)
+    grade_val = float(grade if grade is not None else default_grade)
     idxs = [SCALE.index(a) for a in answers]
     likert_vals = [base + i for i in idxs]
-    feats = np.array([age_val] + likert_vals, dtype=float).reshape(1, -1)
+    feats = np.array([age_val, grade_val] + likert_vals, dtype=float).reshape(1, -1)
     return feats
 
 
@@ -98,9 +100,9 @@ def _to_probability(model, X: np.ndarray) -> float:
     return 0.9 if pred == 1 else 0.1
 
 
-def predict(answers: List[str], age: Optional[int] = None) -> Tuple[str, float, str]:
+def predict(answers: List[str], age: Optional[int] = None, grade: Optional[int] = None) -> Tuple[str, float, str]:
     _load_artifacts()
-    X = _build_features(age, answers)
+    X = _build_features(age, grade, answers)
     if _scaler is not None:
         try:
             X = _scaler.transform(X)
