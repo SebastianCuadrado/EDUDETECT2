@@ -1,4 +1,4 @@
-import os
+﻿import os
 import time
 from pathlib import Path
 
@@ -103,7 +103,7 @@ with st.container():
         st.write("")
 
         with st.form("login_form", clear_on_submit=False):
-            user = st.text_input("Ingrese usuario", placeholder="tu.usuario@colegio.edu")
+            user = st.text_input("Ingrese usuario", placeholder="tusuario...por ejemplo: FOREB")
             pwd = st.text_input("Ingrese contraseña", type="password", placeholder="••••••••")
             submit = st.form_submit_button("Ingresar", use_container_width=True)
 
