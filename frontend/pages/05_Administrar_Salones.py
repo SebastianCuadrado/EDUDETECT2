@@ -4,7 +4,7 @@ from datetime import date
 import requests
 import streamlit as st
 
-from ui_common import ensure_auth, render_sidebar_nav, render_topbar
+from ui_common import ensure_auth, paginate_list, render_sidebar_nav, render_topbar
 
 
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000/api/v1")
@@ -83,7 +83,12 @@ def main():
     st.markdown("### Administrar salones")
 
     q = st.text_input("Buscar salón...", placeholder="Sección, grado o año")
+    prev_q = st.session_state.get("last_rooms_query")
+    if prev_q != q:
+        st.session_state["last_rooms_query"] = q
+        st.session_state["rooms_page"] = 1
     rooms = api_get_all("/classrooms/", params={"search": q or None})
+    paged_rooms, _, _, _ = paginate_list(rooms, "rooms_page", page_size=10)
 
     if "show_create_room" not in st.session_state:
         st.session_state.show_create_room = False
@@ -101,7 +106,7 @@ def main():
                 _safe_rerun()
     idx = (idx + 1) % 3
 
-    for r in rooms:
+    for r in paged_rooms:
         with cols[idx]:
             with st.container(border=True):
                 rid = r.get('id')

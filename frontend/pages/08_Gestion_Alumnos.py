@@ -4,10 +4,13 @@ from datetime import date
 import requests
 import streamlit as st
 
-from ui_common import ensure_auth, render_sidebar_nav, render_topbar
+from ui_common import ensure_auth, paginate_list, render_sidebar_nav, render_topbar
 
 
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000/api/v1")
+
+page_size = 10
+page = st.session_state.get("page_students", 1)  # o page_users en el otro listado
 
 
 def _safe_rerun():
@@ -114,6 +117,7 @@ def main():
 
     if do or "admin_students_cache" not in st.session_state:
         st.session_state.admin_students_cache = fetch_students(query, y, g, s)
+        st.session_state["admin_students_page"] = 1
     students = st.session_state.get("admin_students_cache", [])
 
     # Crear nuevo alumno: navega a la p\u00e1gina unificada de edici\u00f3n/creaci\u00f3n
@@ -133,7 +137,10 @@ def main():
 
     # Listado
     st.markdown("### Lista de alumnos")
-    for stu in students:
+    paged_students, _, _, _ = paginate_list(students, "admin_students_page", page_size=10)
+    if not students:
+        st.info("No hay alumnos para mostrar.")
+    for stu in paged_students:
         with st.container(border=True):
             c1, c2, c3, c4 = st.columns([3, 2.5, 2.5, 1.5])
             c1.write(f"{stu.get('first_name','')} {stu.get('last_name','')}")
@@ -142,7 +149,7 @@ def main():
 
             cls = fetch_active_classroom(stu.get("id"))
             if cls:
-                label = cls.get("name") or f"{cls.get('grade','')}° {cls.get('section','')}".strip()
+                label = f"{cls.get('name','')} {cls.get('grade','')}° {cls.get('section','')}".strip()
                 c3.caption(f"Salón: {label}")
             else:
                 c3.caption("Salón: -")
@@ -165,6 +172,7 @@ def main():
                 if ok:
                     st.success("Alumno eliminado")
                     st.session_state["force_refresh_students"] = True
+                    st.session_state["admin_students_page"] = 1
                     st.session_state.pop("admin_students_cache", None)
                     _safe_rerun()
                 else:
@@ -173,5 +181,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

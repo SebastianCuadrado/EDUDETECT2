@@ -5,7 +5,7 @@ from datetime import date
 import requests
 import streamlit as st
 
-from ui_common import ensure_auth, render_sidebar_nav, render_topbar
+from ui_common import ensure_auth, paginate_list, render_sidebar_nav, render_topbar
 
 
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000/api/v1")
@@ -104,7 +104,8 @@ def render_teacher_list(students):
     if not students:
         st.info("Aún no tienes alumnos registrados en tus salones.")
         return
-    for stu in students:
+    paged_students, _, _, _ = paginate_list(students, "teacher_students_page", page_size=10)
+    for stu in paged_students:
         with st.container(border=True):
             c1, c2, c3, c4 = st.columns([3, 2, 1, 1])
             c1.write(f"{stu.get('first_name','')} {stu.get('last_name','')}")
@@ -144,6 +145,8 @@ def main():
 
     if do or "students_eval_cache" not in st.session_state:
         st.session_state.students_eval_cache = fetch_students(query, y, g, s, is_admin=is_admin)
+        st.session_state["admin_eval_students_page"] = 1
+        st.session_state["teacher_students_page"] = 1
 
     students = st.session_state.get("students_eval_cache", [])
 
@@ -154,7 +157,10 @@ def main():
     left, right = st.columns([1.6, 1])
 
     with left:
-        for stu in students:
+        paged_students, _, _, _ = paginate_list(students, "admin_eval_students_page", page_size=10)
+        if not students:
+            st.info("No hay alumnos para mostrar.")
+        for stu in paged_students:
             st.container(border=True)
             col_a, col_b, col_c, col_d = st.columns([0.9, 3, 2, 1.2])
             init = initials(stu.get("first_name", ""), stu.get("last_name", ""))

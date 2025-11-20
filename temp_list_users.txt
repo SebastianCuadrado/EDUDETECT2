@@ -1,8 +1,8 @@
-import os
+﻿import os
 import requests
 import streamlit as st
 
-from ui_common import ensure_auth, paginate_list, render_sidebar_nav, render_topbar
+from ui_common import ensure_auth, render_sidebar_nav, render_topbar
 
 
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000/api/v1")
@@ -100,7 +100,6 @@ def main():
 
     if do_search or "users_cache" not in st.session_state:
         st.session_state.users_cache = fetch_users(q)
-        st.session_state["users_page"] = 1
     users = st.session_state.get("users_cache", [])
 
     st.markdown("### Lista de usuarios")
@@ -108,14 +107,12 @@ def main():
         st.info("Sin usuarios para mostrar.")
         return
 
-    paged_users, _, _, _ = paginate_list(users, "users_page", page_size=10)
-
     # Cargar conteo de salones asignados por docente
-    teacher_ids = [u.get("id") for u in paged_users if (u.get("role") or "").upper() in ("DOCENTE", "TEACHER", "PROFESOR")]
+    teacher_ids = [u.get("id") for u in users if (u.get("role") or "").upper() in ("DOCENTE", "TEACHER", "PROFESOR")]
     assign_counts = fetch_assignments_count(teacher_ids) if teacher_ids else {}
 
     # Tarjetas similares al listado de alumnos
-    for u in paged_users:
+    for u in users:
         uid = u.get("id")
         username = u.get("username") or ""
         nombre = ((u.get("first_name") or "") + " " + (u.get("last_name") or "")).strip()
@@ -125,16 +122,14 @@ def main():
         salons = assign_counts.get(uid) if role_up in ("DOCENTE", "TEACHER", "PROFESOR") else None
 
         with st.container(border=True):
-            c1, c2, c3 = st.columns([3.2, 3.2, 2])
+            c1, c2, c3, c4 = st.columns([3, 3, 1.2, 1.2])
             c1.write(nombre or username)
             c2.caption(f"{username} · {email}")
             if salons is None:
                 c3.caption(f"Rol: {role}")
             else:
                 c3.caption(f"Rol: {role} · Salones: {salons}")
-
-            btn_col = c3.columns(2)
-            if btn_col[0].button("Editar", key=f"upd_{uid}", help="Editar usuario"):
+            if c4.button("Editar", key=f"upd_{uid}"):
                 st.session_state.selected_user_id = uid
                 st.session_state.user_create_mode = False
                 try:
@@ -144,13 +139,9 @@ def main():
                 except Exception:
                     pass
                 safe_rerun()
-
-            if btn_col[1].button("Eliminar", key=f"del_{uid}", help="Eliminar usuario"):
+            if st.button("Eliminar", key=f"del_{uid}"):
                 if delete_user(uid):
-                    st.session_state.users_cache = [
-                        x for x in st.session_state.users_cache if x.get("id") != uid
-                    ]
-                    st.session_state["users_page"] = 1
+                    st.session_state.users_cache = [x for x in st.session_state.users_cache if x.get("id") != uid]
                     safe_rerun()
 
 

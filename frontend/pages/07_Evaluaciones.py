@@ -4,7 +4,7 @@ from datetime import date
 import requests
 import streamlit as st
 
-from ui_common import ensure_auth, render_sidebar_nav, render_topbar
+from ui_common import ensure_auth, paginate_list, render_sidebar_nav, render_topbar
 
 
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000/api/v1")
@@ -105,7 +105,9 @@ def page_list():
         st.info("Aún no has registrado evaluaciones.")
         return
 
-    for ev in evals:
+    paged_evals, _, _, _ = paginate_list(evals, "evals_page", page_size=10)
+
+    for ev in paged_evals:
         with st.container(border=True):
             c1, c2, c3, c4, c5 = st.columns([2, 3, 2, 2, 2])
             c1.caption(str(ev.get("evaluated_at", "-")))
