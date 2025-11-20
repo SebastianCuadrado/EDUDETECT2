@@ -1,7 +1,6 @@
 ﻿import os
 import time
 from pathlib import Path
-
 import streamlit as st
 
 try:
@@ -29,19 +28,14 @@ st.markdown(
         padding-bottom: 4rem;
         max-width: 1000px;
     }
-    .login-grid [data-testid="column"] {
-        padding-top: 8px;
-        padding-bottom: 8px;
-    }
-    .left-pane { text-align: center; }
-    .left-pane img { display: block; margin: 0 auto; max-width: 320px; }
-    .logo-circle { padding-left: 10px; width: 320px; height: 280px; border-radius: 999px; background: linear-gradient(180deg, rgba(180,180,180,.6), rgba(140,140,140,.6)); display: grid; place-items: center; color: #222; font-weight: 600; }
+    .login-grid [data-testid="column"] { padding-top: 8px; padding-bottom: 8px; }
+    .left-pane { text-align: center; display: flex; flex-direction: column; align-items: center; }
+    .left-pane img { width: 320px; height: 280px; border-radius: 999px; background: linear-gradient(180deg, rgba(180,180,180,.6), rgba(140,140,140,.6)); padding: 12px; object-fit: contain; }
+    .logo-circle { width: 320px; height: 280px; border-radius: 999px; background: linear-gradient(180deg, rgba(180,180,180,.6), rgba(140,140,140,.6)); display: grid; place-items: center; color: #222; font-weight: 600; }
     .tagline { margin: 16px auto 0 auto; padding: 0; font-weight: 600; text-align: center; }
     .card { background: var(--card-bg); border: 1px solid rgba(128,128,128,0.25); border-radius: 16px; padding: 32px 28px; box-shadow: 0 12px 28px rgba(0,0,0,0.16); }
     .login-title { text-align: center; letter-spacing: .04em; font-weight: 700; margin-bottom: 1rem; }
-    @media (max-width: 980px) {
-        .block-container { padding-top: 2rem; padding-bottom: 2rem; }
-    }
+    @media (max-width: 980px) { .block-container { padding-top: 2rem; padding-bottom: 2rem; } }
     </style>
     """,
     unsafe_allow_html=True,
@@ -55,9 +49,7 @@ if "username" not in st.session_state:
 default_logo = Path(__file__).resolve().parent / "assets" / "logo.png"
 env_logo = os.getenv("LOGO_PATH")
 logo_candidates = [Path(env_logo)] if env_logo else []
-logo_candidates.append(default_logo)
-logo_candidates.append(Path("frontend/assets/logo.png"))
-logo_candidates.append(Path("assets/logo.png"))
+logo_candidates += [default_logo, Path("frontend/assets/logo.png"), Path("assets/logo.png")]
 logo_path = next((p for p in logo_candidates if p.exists()), None)
 
 with st.container():
@@ -65,11 +57,11 @@ with st.container():
     col_left, col_right = st.columns([1, 1], gap="large")
 
     with col_left:
-        st.markdown('<div class="left-pane"   style="display: flex; justify-content: center; align-items: center;    " >', unsafe_allow_html=True)
+        st.markdown('<div class="left-pane">', unsafe_allow_html=True)
         if logo_path:
-           st.markdown(f'<div class="logo-circle"><img src="{logo_path.as_posix()}" style="max-width:100%; height:100%; object-fit:contain;" /></div>', unsafe_allow_html=True)
+            st.image(str(logo_path), output_format="PNG")
         else:
-            st.markdown('<div class="logo-circle" style="padding-left: 10px;" >Logo</div>', unsafe_allow_html=True)
+            st.markdown('<div class="logo-circle">Logo</div>', unsafe_allow_html=True)
         st.markdown('<div class="tagline">Prevención temprana para un futuro brillante</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
