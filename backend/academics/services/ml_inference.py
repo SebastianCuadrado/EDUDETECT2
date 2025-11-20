@@ -81,7 +81,7 @@ def _build_features(age: Optional[int], grade: Optional[int], answers: List[str]
     grade_val = float(grade if grade is not None else default_grade)
     idxs = [SCALE.index(a) for a in answers]
     likert_vals = [base + i for i in idxs]
-    feats = np.array([age_val, grade_val] + likert_vals, dtype=float).reshape(1, -1)
+    feats = np.array([grade_val, age_val] + likert_vals, dtype=float).reshape(1, -1)
     return feats
 
 
