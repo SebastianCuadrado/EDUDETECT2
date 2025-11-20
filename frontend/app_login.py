@@ -67,7 +67,7 @@ with st.container():
     with col_left:
         st.markdown('<div class="left-pane"   style="display: flex; justify-content: center; align-items: center;    " >', unsafe_allow_html=True)
         if logo_path:
-            st.image(str(logo_path), width=260)
+           st.markdown(f'<div class="logo-circle"><img src="{logo_path.as_posix()}" style="max-width:100%; height:100%; object-fit:contain;" /></div>', unsafe_allow_html=True)
         else:
             st.markdown('<div class="logo-circle" style="padding-left: 10px;" >Logo</div>', unsafe_allow_html=True)
         st.markdown('<div class="tagline">Prevención temprana para un futuro brillante</div>', unsafe_allow_html=True)
