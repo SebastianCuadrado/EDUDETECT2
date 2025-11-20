@@ -65,7 +65,7 @@ with st.container():
     col_left, col_right = st.columns([1, 1], gap="large")
 
     with col_left:
-        st.markdown('<div class="left-pane">', unsafe_allow_html=True)
+        st.markdown('<div class="left-pane"   style="display: flex; justify-content: center; align-items: center;    " >', unsafe_allow_html=True)
         if logo_path:
             st.image(str(logo_path), width=260)
         else:
