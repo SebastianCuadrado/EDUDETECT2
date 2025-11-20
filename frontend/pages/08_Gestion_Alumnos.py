@@ -137,36 +137,35 @@ def main():
         with st.container(border=True):
             c1, c2, c3, c4 = st.columns([3, 2.5, 2.5, 1.5])
             c1.write(f"{stu.get('first_name','')} {stu.get('last_name','')}")
-            age = stu.get('age')
-            c2.caption(f"Edad: {'N/D' if age in (None, '') else age}  |  G\u00e9nero: {stu.get('gender','') or '-'}")
+            age = stu.get("age")
+            c2.caption(f"Edad: {'N/D' if age in (None, '') else age}  |  Género: {stu.get('gender','') or '-'}")
+
             cls = fetch_active_classroom(stu.get("id"))
             if cls:
                 label = cls.get("name") or f"{cls.get('grade','')}° {cls.get('section','')}".strip()
-                c3.caption(f"Sal\u00f3n: {label}")
+                c3.caption(f"Salón: {label}")
             else:
-                c3.caption("Sal\u00f3n: -")
+                c3.caption("Salón: -")
+
             b1, b2 = c4.columns(2)
-            if b1.button(\"Editar\", key=f\"stu_edit_{stu.get('id')}\"):
-                st.session_state.selected_student_id = stu.get('id')
+            if b1.button("Editar", key=f"stu_edit_{stu.get('id')}"):
+                st.session_state.selected_student_id = stu.get("id")
                 st.session_state.create_mode = False
                 try:
                     import streamlit as _st
-                    if hasattr(_st, 'switch_page'):
-                        _st.switch_page('pages/10_Editar_Alumno.py')
+                    if hasattr(_st, "switch_page"):
+                        _st.switch_page("pages/10_Editar_Alumno.py")
                     else:
                         _safe_rerun()
                 except Exception:
                     _safe_rerun()
-            if b2.button(\"Eliminar\", key=f\"stu_del_{stu.get('id')}\"):
-                ok, msg = delete_student(stu.get('id'))
+
+            if b2.button("Eliminar", key=f"stu_del_{stu.get('id')}"):
+                ok, msg = delete_student(stu.get("id"))
                 if ok:
-                    st.success(\"Alumno eliminado\")
-                    st.session_state[\"force_refresh_students\"] = True
-                    try:
-                        if 'admin_students_cache' in st.session_state:
-                            del st.session_state['admin_students_cache']
-                    except Exception:
-                        pass
+                    st.success("Alumno eliminado")
+                    st.session_state["force_refresh_students"] = True
+                    st.session_state.pop("admin_students_cache", None)
                     _safe_rerun()
                 else:
                     st.error(msg)
