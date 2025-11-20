@@ -108,7 +108,7 @@ def main():
         st.info("Sin usuarios para mostrar.")
         return
 
-    paged_users, _, _, _ = paginate_list(users, "users_page", page_size=10)
+    paged_users, _, _, _ = paginate_list(users, "users_page", page_size=5)
 
     # Cargar conteo de salones asignados por docente
     teacher_ids = [u.get("id") for u in paged_users if (u.get("role") or "").upper() in ("DOCENTE", "TEACHER", "PROFESOR")]

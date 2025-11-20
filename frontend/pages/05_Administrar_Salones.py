@@ -88,7 +88,7 @@ def main():
         st.session_state["last_rooms_query"] = q
         st.session_state["rooms_page"] = 1
     rooms = api_get_all("/classrooms/", params={"search": q or None})
-    paged_rooms, _, _, _ = paginate_list(rooms, "rooms_page", page_size=10)
+    paged_rooms, _, _, _ = paginate_list(rooms, "rooms_page", page_size=5)
 
     if "show_create_room" not in st.session_state:
         st.session_state.show_create_room = False

@@ -104,7 +104,7 @@ def render_teacher_list(students):
     if not students:
         st.info("Aún no tienes alumnos registrados en tus salones.")
         return
-    paged_students, _, _, _ = paginate_list(students, "teacher_students_page", page_size=10)
+    paged_students, _, _, _ = paginate_list(students, "teacher_students_page", page_size=5)
     for stu in paged_students:
         with st.container(border=True):
             c1, c2, c3, c4 = st.columns([3, 2, 1, 1])
@@ -157,7 +157,7 @@ def main():
     left, right = st.columns([1.6, 1])
 
     with left:
-        paged_students, _, _, _ = paginate_list(students, "admin_eval_students_page", page_size=10)
+        paged_students, _, _, _ = paginate_list(students, "admin_eval_students_page", page_size=5)
         if not students:
             st.info("No hay alumnos para mostrar.")
         for stu in paged_students:
