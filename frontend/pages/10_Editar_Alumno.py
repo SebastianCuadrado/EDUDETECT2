@@ -109,7 +109,7 @@ def main():
     # Barra superior con volver
     col1, col2 = st.columns([6, 1])
     with col2:
-        if st.button("¢¢  Volver"):
+        if st.button("<< Volver"):
             go_back()
 
     stu = {}
@@ -186,8 +186,8 @@ def main():
                     start_d = st.date_input("Fecha de inicio en nuevo salón", value=date.today())
 
         csave, ccancel = st.columns([1, 1])
-        save = csave.form_submit_button("Registrar" if create_mode else "Guardar cambios")
-        cancel = ccancel.form_submit_button("Cancelar")
+        save = csave.form_submit_button("Registrar" if create_mode else "Guardar cambios", type="primary")
+        cancel = ccancel.form_submit_button("Cancelar", type="secondary")
 
     if cancel:
         st.session_state.create_mode = False

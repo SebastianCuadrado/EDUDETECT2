@@ -91,8 +91,8 @@ def main():
             section = st.text_input("SecciÃ³n", value=room.get('section') or "", max_chars=2)
         name = st.text_input("Nombre del salÃ³n", value=room.get('name') or "")
         csave, ccancel = st.columns([1, 1])
-        save = csave.form_submit_button("Guardar cambios")
-        cancel = ccancel.form_submit_button("Cancelar")
+        save = csave.form_submit_button("Guardar cambios", type="primary")
+        cancel = ccancel.form_submit_button("Cancelar", type="secondary")
 
     if cancel:
         _safe_go_back()
