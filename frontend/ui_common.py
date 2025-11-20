@@ -1,4 +1,4 @@
-import base64
+﻿import base64
 import json
 import time
 from typing import Any, Dict
@@ -115,7 +115,7 @@ def logout():
             st.experimental_rerun()
 
 
-def paginate_list(items, key: str, page_size: int = 10, label: str | None = None):
+def paginate_list(items, key: str, page_size: int = 5, label: str | None = None):
     """
     Simple client-side paginator returning the current slice and page info.
     """
