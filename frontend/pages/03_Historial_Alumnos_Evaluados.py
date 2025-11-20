@@ -136,14 +136,22 @@ def main():
 
     c1, c2, c3, c4 = st.columns([3, 1, 1, 1])
     query = c1.text_input("Buscar alumno...", placeholder="nombre, apellido o DNI")
-    y = c2.number_input("Año", min_value=2000, max_value=2100, value=date.today().year, step=1)
-    g = c3.number_input("Grado", min_value=1, max_value=12, value=1, step=1)
-    s = c4.text_input("Sección", max_chars=2, value="A")
+    y_raw = c2.text_input("Año", value="", placeholder="ej: 2024")
+    g_raw = c3.text_input("Grado", value="", placeholder="ej: 3")
+    s = c4.text_input("Sección", max_chars=2, value="")
 
     col_btn, _ = st.columns([1, 5])
     do = col_btn.button("Filtrar")
 
+    def _to_int(val):
+        try:
+            return int(str(val).strip())
+        except Exception:
+            return None
+
     if do or "students_eval_cache" not in st.session_state:
+        y = _to_int(y_raw)
+        g = _to_int(g_raw)
         st.session_state.students_eval_cache = fetch_students(query, y, g, s, is_admin=is_admin)
         st.session_state["admin_eval_students_page"] = 1
         st.session_state["teacher_students_page"] = 1
