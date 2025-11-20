@@ -69,7 +69,7 @@ with st.container():
         if logo_path:
             st.image(str(logo_path), width=260)
         else:
-            st.markdown('<div class="logo-circle">Logo</div>', unsafe_allow_html=True)
+            st.markdown('<div class="logo-circle" style="padding-left: 10px;" >Logo</div>', unsafe_allow_html=True)
         st.markdown('<div class="tagline">Prevención temprana para un futuro brillante</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
