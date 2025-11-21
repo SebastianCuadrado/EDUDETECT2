@@ -141,12 +141,12 @@ def page_new():
             st.experimental_rerun() if hasattr(st, "experimental_rerun") else st.rerun()
         return
 
-        with st.form("eval_form", clear_on_submit=False):
-            col1, col2, col3 = st.columns([3, 1.2, 1])
-            with col1:
-                student_idx = st.selectbox(
-                    "Selecciona al alumno",
-                    options=list(range(len(options))),
+    with st.form("eval_form", clear_on_submit=False):
+        col1, col2, col3 = st.columns([3, 1.2, 1])
+        with col1:
+            student_idx = st.selectbox(
+                "Selecciona al alumno",
+                options=list(range(len(options))),
                 format_func=lambda i: options[i][1],
             )
         with col2:
