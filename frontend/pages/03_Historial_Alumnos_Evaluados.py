@@ -57,7 +57,7 @@ def initials(first, last):
     return (first[:1] or "").upper() + (last[:1] or "").upper()
 
 
-def create_evaluation(student_id: int, evaluated_at: date, diagnosis: str, notes: str, probability=None):
+def create_evaluation(student_id: int, evaluated_at: date, diagnosis: str, notes: str, probability=None, answers=None):
     payload = {
         "student": student_id,
         "evaluated_at": evaluated_at.isoformat() if hasattr(evaluated_at, "isoformat") else str(evaluated_at),
@@ -66,6 +66,8 @@ def create_evaluation(student_id: int, evaluated_at: date, diagnosis: str, notes
     }
     if probability is not None and probability != "":
         payload["probability"] = probability
+    if answers is not None:
+        payload["answers"] = answers
     r = requests.post(
         f"{API_URL}/evaluations/",
         headers=auth_headers() | {"Content-Type": "application/json"},
@@ -296,7 +298,14 @@ def main():
                     full_notes = (notes + "\n\n" if notes else "") + auto_note
 
                     with st.spinner("Guardando evaluación..."):
-                        ok, data = create_evaluation(sel.get("id"), eval_date, diagnosis, full_notes, prob)
+                        ok, data = create_evaluation(
+                            sel.get("id"),
+                            eval_date,
+                            diagnosis,
+                            full_notes,
+                            prob,
+                            answers=responses,
+                        )
                         if ok:
                             st.success(f"Diagnóstico: {diagnosis} · Probabilidad: {prob}")
                             st.session_state.evals_cache = fetch_evaluations(sel.get("id"))

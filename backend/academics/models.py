@@ -99,6 +99,7 @@ class Evaluation(models.Model):
     probability = models.FloatField(null=True, blank=True)
     notes = models.TextField(blank=True)
     model_version = models.CharField(max_length=50, blank=True)
+    answers = models.JSONField(null=True, blank=True)  # Guarda respuestas del cuestionario
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

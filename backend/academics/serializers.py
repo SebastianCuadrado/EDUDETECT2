@@ -52,10 +52,12 @@ class EvaluationSerializer(serializers.ModelSerializer):
             "probability",
             "notes",
             "model_version",
+            "answers",
         ]
         read_only_fields = ["evaluated_by"]
         extra_kwargs = {
             "probability": {"required": False, "allow_null": True},
+            "answers": {"required": False, "allow_null": True},
         }
 
     def get_student_name(self, obj):
