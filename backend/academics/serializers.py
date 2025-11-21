@@ -18,10 +18,11 @@ class ClassroomSerializer(serializers.ModelSerializer):
 
 class StudentSerializer(serializers.ModelSerializer):
     last_evaluation = serializers.SerializerMethodField(read_only=True)
+    current_grade = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Student
-        fields = ["id", "first_name", "last_name", "age", "gender", "last_evaluation"]
+        fields = ["id", "first_name", "last_name", "age", "gender", "last_evaluation", "current_grade"]
 
     def get_last_evaluation(self, obj):
         ev = obj.evaluations.order_by("-evaluated_at", "-id").first()
@@ -33,6 +34,16 @@ class StudentSerializer(serializers.ModelSerializer):
             "probability": ev.probability,
             "evaluated_by": getattr(ev.evaluated_by, "username", None),
         }
+
+    def get_current_grade(self, obj):
+        # Salón activo (sin end_date) o el más reciente
+        enrollment = (
+            obj.enrollments.filter(end_date__isnull=True).order_by("-start_date", "-id").first()
+            or obj.enrollments.order_by("-start_date", "-id").first()
+        )
+        if enrollment and enrollment.classroom:
+            return enrollment.classroom.grade
+        return None
 
 
 class EvaluationSerializer(serializers.ModelSerializer):

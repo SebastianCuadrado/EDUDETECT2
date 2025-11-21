@@ -131,6 +131,7 @@ def page_new():
         (
             s.get("id"),
             f"{s.get('first_name','')} {s.get('last_name','')}".strip(),
+            s.get("current_grade"),
         )
         for s in students
     ]
@@ -152,7 +153,14 @@ def page_new():
         with col2:
             eval_date = st.date_input("Fecha de evaluación", value=date.today())
         with col3:
-            grade_val = st.number_input("Grado", min_value=1, max_value=12, value=1, step=1)
+            selected_grade = options[student_idx][2]
+            st.text_input(
+                "Grado",
+                value="" if selected_grade in (None, "") else str(selected_grade),
+                disabled=True,
+                placeholder="N/D",
+            )
+            grade_val = selected_grade
 
         st.divider()
         st.caption("Escala: 1=NUNCA, 2=RARA VEZ, 3=A VECES, 4=FRECUENTEMENTE, 5=SIEMPRE")
