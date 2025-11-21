@@ -42,6 +42,23 @@ def fetch_students():
         return []
 
 
+def fetch_student_grade(student_id: int):
+    cache = st.session_state.setdefault("student_grade_cache", {})
+    if student_id in cache:
+        return cache[student_id]
+    try:
+        r = requests.get(f"{API_URL}/students/{student_id}/", headers=auth_headers(), timeout=12)
+        if r.status_code == 200:
+            data = r.json()
+            grade = data.get("current_grade")
+            cache[student_id] = grade
+            return grade
+    except Exception:
+        pass
+    cache[student_id] = None
+    return None
+
+
 def create_evaluation(student_id: int, evaluated_at: date, diagnosis: str, notes: str, probability=None, answers=None, model_version=None):
     payload = {
         "student": student_id,
@@ -154,13 +171,15 @@ def page_new():
             eval_date = st.date_input("Fecha de evaluación", value=date.today())
         with col3:
             selected_grade = options[student_idx][2]
+            if selected_grade in (None, ""):
+                selected_grade = fetch_student_grade(options[student_idx][0])
+            grade_val = selected_grade
             st.text_input(
                 "Grado",
-                value="" if selected_grade in (None, "") else str(selected_grade),
+                value="" if grade_val in (None, "") else str(grade_val),
                 disabled=True,
                 placeholder="N/D",
             )
-            grade_val = selected_grade
 
         st.divider()
         st.caption("Escala: 1=NUNCA, 2=RARA VEZ, 3=A VECES, 4=FRECUENTEMENTE, 5=SIEMPRE")
