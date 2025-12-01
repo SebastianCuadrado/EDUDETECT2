@@ -189,7 +189,7 @@ def page_new():
             if selected_grade in (None, ""):
                 selected_grade = fetch_student_grade(options[student_idx][0])
         grade_val = selected_grade
-            st.text_input(
+        st.text_input(
                 "Grado",
                 value="" if grade_val in (None, "") else str(grade_val),
                 disabled=True,
