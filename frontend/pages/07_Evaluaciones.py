@@ -163,20 +163,8 @@ def evals_to_csv(evals: list[dict]) -> bytes:
 
 
 def page_list():
-    header_left, header_right = st.columns([2, 1])
-    with header_left:
-        st.markdown("### Mis evaluaciones")
+    st.markdown("### Mis evaluaciones")
     evals = fetch_my_evaluations()
-    with header_right:
-        csv_bytes = evals_to_csv(evals)
-        st.download_button(
-            "Exportar CSV",
-            data=csv_bytes or b"",
-            file_name="mis_evaluaciones.csv",
-            mime="text/csv",
-            disabled=not bool(evals),
-            use_container_width=True,
-        )
 
     col_btn, _ = st.columns([1, 6])
     if col_btn.button("Nueva evaluación", type="primary"):
@@ -191,13 +179,22 @@ def page_list():
 
     for ev in paged_evals:
         with st.container(border=True):
-            c1, c2, c3, c4, c5 = st.columns([2, 3, 2, 2, 2])
+            c1, c2, c3, c4, c5, c6 = st.columns([2, 3, 2, 2, 2, 1.5])
             c1.caption(str(ev.get("evaluated_at", "-")))
             c2.write(ev.get("student_name") or f"Alumno #{ev.get('student')}")
             p = ev.get("probability")
             c3.write(bucket_label(p if p not in (None, "") else None))
             c4.write("-" if p in (None, "") else f"{float(p):.3f}")
             c5.caption(ev.get("evaluated_by_name") or "Yo")
+            single_csv = evals_to_csv([ev])
+            c6.download_button(
+                "CSV",
+                data=single_csv or b"",
+                file_name=f"evaluacion_{ev.get('id','') or 'sin_id'}.csv",
+                mime="text/csv",
+                key=f"csv_{ev.get('id')}",
+                use_container_width=True,
+            )
 
 
 def page_new():
