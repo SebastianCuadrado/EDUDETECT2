@@ -100,6 +100,8 @@ class Evaluation(models.Model):
     notes = models.TextField(blank=True)
     model_version = models.CharField(max_length=50, blank=True)
     answers = models.JSONField(null=True, blank=True)  # Guarda respuestas del cuestionario
+    student_grade = models.PositiveSmallIntegerField(null=True, blank=True)
+    student_age = models.IntegerField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

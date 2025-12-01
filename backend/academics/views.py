@@ -239,6 +239,21 @@ class EvaluationViewSet(viewsets.ModelViewSet):
             qs = qs.filter(evaluated_by=self.request.user)
         return qs.order_by("-evaluated_at", "-id")
 
+    def perform_create(self, serializer):
+        # Completar grado/edad si no vienen en el payload
+        student = serializer.validated_data.get("student")
+        grade = serializer.validated_data.get("student_grade")
+        age = serializer.validated_data.get("student_age")
+        if not grade and student:
+            grade = current_student_grade(student.id)
+        if age in (None, "") and student:
+            age = getattr(student, "age", None)
+        serializer.save(
+            evaluated_by=self.request.user if self.request and self.request.user.is_authenticated else None,
+            student_grade=grade,
+            student_age=age,
+        )
+
 
 class EvaluateQuestionnaireView(APIView):
     permission_classes = [IsAdminOrTeacher]

@@ -59,7 +59,17 @@ def fetch_student_grade(student_id: int):
     return None
 
 
-def create_evaluation(student_id: int, evaluated_at: date, diagnosis: str, notes: str, probability=None, answers=None, model_version=None):
+def create_evaluation(
+    student_id: int,
+    evaluated_at: date,
+    diagnosis: str,
+    notes: str,
+    probability=None,
+    answers=None,
+    model_version=None,
+    student_grade=None,
+    student_age=None,
+):
     payload = {
         "student": student_id,
         "evaluated_at": evaluated_at.isoformat() if hasattr(evaluated_at, "isoformat") else str(evaluated_at),
@@ -72,6 +82,10 @@ def create_evaluation(student_id: int, evaluated_at: date, diagnosis: str, notes
         payload["answers"] = answers
     if model_version:
         payload["model_version"] = model_version
+    if student_grade is not None:
+        payload["student_grade"] = student_grade
+    if student_age is not None:
+        payload["student_age"] = student_age
     r = requests.post(
         f"{API_URL}/evaluations/",
         headers=auth_headers() | {"Content-Type": "application/json"},
@@ -149,6 +163,7 @@ def page_new():
             s.get("id"),
             f"{s.get('first_name','')} {s.get('last_name','')}".strip(),
             s.get("current_grade"),
+            s.get("age"),
         )
         for s in students
     ]
@@ -173,7 +188,7 @@ def page_new():
             selected_grade = options[student_idx][2]
             if selected_grade in (None, ""):
                 selected_grade = fetch_student_grade(options[student_idx][0])
-            grade_val = selected_grade
+        grade_val = selected_grade
             st.text_input(
                 "Grado",
                 value="" if grade_val in (None, "") else str(grade_val),
@@ -263,6 +278,8 @@ def page_new():
                 "model_version": model_version,
                 "answers_num": responses_num,
                 "answers_txt": answers_txt,
+                "student_grade": grade_val,
+                "student_age": options[student_idx][3],
             }
 
     if st.session_state.get("predicted"):
@@ -280,6 +297,8 @@ def page_new():
                     pr["prob"],
                     answers=pr.get("answers_num") or pr.get("answers_txt"),
                     model_version=pr.get("model_version"),
+                    student_grade=pr.get("student_grade"),
+                    student_age=pr.get("student_age"),
                 )
                 if ok:
                     st.session_state.pop("predicted", None)

@@ -57,7 +57,16 @@ def initials(first, last):
     return (first[:1] or "").upper() + (last[:1] or "").upper()
 
 
-def create_evaluation(student_id: int, evaluated_at: date, diagnosis: str, notes: str, probability=None, answers=None):
+def create_evaluation(
+    student_id: int,
+    evaluated_at: date,
+    diagnosis: str,
+    notes: str,
+    probability=None,
+    answers=None,
+    student_grade=None,
+    student_age=None,
+):
     payload = {
         "student": student_id,
         "evaluated_at": evaluated_at.isoformat() if hasattr(evaluated_at, "isoformat") else str(evaluated_at),
@@ -68,6 +77,10 @@ def create_evaluation(student_id: int, evaluated_at: date, diagnosis: str, notes
         payload["probability"] = probability
     if answers is not None:
         payload["answers"] = answers
+    if student_grade is not None:
+        payload["student_grade"] = student_grade
+    if student_age is not None:
+        payload["student_age"] = student_age
     r = requests.post(
         f"{API_URL}/evaluations/",
         headers=auth_headers() | {"Content-Type": "application/json"},
@@ -305,6 +318,8 @@ def main():
                             full_notes,
                             prob,
                             answers=responses,
+                            student_grade=sel.get("current_grade"),
+                            student_age=sel.get("age"),
                         )
                         if ok:
                             st.success(f"Diagnóstico: {diagnosis} · Probabilidad: {prob}")
