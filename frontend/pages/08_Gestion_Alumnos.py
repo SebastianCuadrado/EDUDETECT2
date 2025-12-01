@@ -9,7 +9,7 @@ from ui_common import ensure_auth, paginate_list, render_sidebar_nav, render_top
 
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000/api/v1")
 
-page_size = 5
+page_size = 10
 page = st.session_state.get("page_students", 1)  # o page_users en el otro listado
 
 
@@ -145,7 +145,7 @@ def main():
 
     # Listado
     st.markdown("### Lista de alumnos")
-    paged_students, _, _, _ = paginate_list(students, "admin_students_page", page_size=5)
+    paged_students, _, _, _ = paginate_list(students, "admin_students_page", page_size=10)
     if not students:
         st.info("No hay alumnos para mostrar.")
     for stu in paged_students:
