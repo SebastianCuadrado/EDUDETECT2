@@ -128,14 +128,61 @@ def bucket_label(prob: float | None) -> str:
     return "Más del 85% (Nivel Alto)"
 
 
+def evals_to_csv(evals: list[dict]) -> bytes:
+    if not evals:
+        return b""
+    import csv
+    import io
+    import json
+
+    fieldnames = [
+        "id",
+        "evaluated_at",
+        "student",
+        "student_name",
+        "diagnosis",
+        "probability",
+        "notes",
+        "evaluated_by",
+        "evaluated_by_name",
+        "model_version",
+        "student_grade",
+        "student_age",
+        "answers",
+    ]
+    buf = io.StringIO()
+    writer = csv.DictWriter(buf, fieldnames=fieldnames)
+    writer.writeheader()
+    for ev in evals:
+        row = {k: ev.get(k) for k in fieldnames}
+        ans = row.get("answers")
+        if isinstance(ans, (list, dict)):
+            row["answers"] = json.dumps(ans, ensure_ascii=False)
+        writer.writerow(row)
+    return buf.getvalue().encode("utf-8")
+
+
 def page_list():
-    st.markdown("### Mis evaluaciones")
+    header_left, header_right = st.columns([2, 1])
+    with header_left:
+        st.markdown("### Mis evaluaciones")
+    evals = fetch_my_evaluations()
+    with header_right:
+        csv_bytes = evals_to_csv(evals)
+        st.download_button(
+            "Exportar CSV",
+            data=csv_bytes or b"",
+            file_name="mis_evaluaciones.csv",
+            mime="text/csv",
+            disabled=not bool(evals),
+            use_container_width=True,
+        )
+
     col_btn, _ = st.columns([1, 6])
     if col_btn.button("Nueva evaluación", type="primary"):
         st.session_state.eval_mode = "new"
         st.experimental_rerun() if hasattr(st, "experimental_rerun") else st.rerun()
 
-    evals = fetch_my_evaluations()
     if not evals:
         st.info("Aún no has registrado evaluaciones.")
         return
