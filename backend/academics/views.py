@@ -29,8 +29,7 @@ def scoped_students_qs(user):
     # Docente: alumnos con vínculo directo o pertenecientes a salones asignados
     return (
         Student.objects.filter(
-            models.Q(teacher_links__teacher=user)
-            | models.Q(enrollments__classroom__teacher_assignments__teacher=user)
+            models.Q(enrollments__classroom__teacher_assignments__teacher=user)
         )
         .distinct()
     )
