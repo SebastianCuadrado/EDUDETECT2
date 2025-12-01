@@ -115,18 +115,10 @@ def logout():
             st.experimental_rerun()
 
 
-def paginate_list(items, key: str, page_size: int = 5, label: str | None = None):
-    """
-    Simple client-side paginator returning the current slice and page info.
-    """
+def paginate_list(items, key: str, page_size: int = 10, label: str | None = None):
     total = len(items)
-    if page_size <= 0:
-        return items, 1, 1, total
-
     total_pages = max(1, (total + page_size - 1) // page_size)
     page = st.session_state.get(key, 1)
-    if page < 1 or page > total_pages:
-        page = 1
 
     if total_pages > 1:
         prev_col, info_col, next_col = st.columns([1, 4, 1])
@@ -135,18 +127,17 @@ def paginate_list(items, key: str, page_size: int = 5, label: str | None = None)
         if next_col.button("Siguiente", key=f"{key}_next", disabled=page >= total_pages):
             page = min(total_pages, page + 1)
         st.session_state[key] = page
-
         start = (page - 1) * page_size
         end = min(start + page_size, total)
-        label_txt = label or "Pagina"
-        info_col.caption(f"{label_txt} {page} de {total_pages} · {start + 1}-{end} de {total}")
+        info_col.caption(f"... {page} de {total_pages} · {start+1}-{end} de {total}")
     else:
         st.session_state[key] = 1
-
+    # slice
     page = st.session_state.get(key, 1)
     start = (page - 1) * page_size
     end = min(start + page_size, total)
     return items[start:end], page, total_pages, total
+
 
 
 def ensure_auth(role: str | None = None):
