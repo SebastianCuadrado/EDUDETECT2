@@ -318,6 +318,15 @@ def main():
 
             st.subheader("Asignacion a salon")
 
+            rooms = api_get_classrooms()
+            room_map = {}
+            for c in rooms:
+                rid = c.get("id")
+                label = f"{c.get('academic_year')} - {c.get('grade')}{c.get('section')}"
+                if c.get("name"):
+                    label = f"{c.get('name')} ({label})"
+                room_map[rid] = label
+
 
 
             # Existing assignments (edit): allow change or delete
@@ -344,7 +353,8 @@ def main():
 
                             cc1, cc2, cc3, cc4 = st.columns([2, 1.2, 1.2, 1])
 
-                            cc1.write(f"Aula ID {a.get('classroom')}")
+                            cid = a.get('classroom')
+                            cc1.write(room_map.get(cid) or f"Aula ID {cid}")
 
                             new_role = cc2.selectbox("Rol", ["TITULAR", "APOYO"], index=0 if a.get('role')=='TITULAR' else 1, key=f"ass_role_{aid}")
 
