@@ -76,6 +76,10 @@ def main():
     render_sidebar_nav()
     render_topbar()
 
+    if st.session_state.pop("force_refresh_users", False):
+        st.session_state.pop("users_cache", None)
+        safe_rerun()
+
     st.title("Gestión de Usuarios")
 
     # Botón nuevo usuario

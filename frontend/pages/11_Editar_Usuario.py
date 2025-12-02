@@ -499,7 +499,7 @@ def main():
                     st.session_state.selected_user_id = None
 
                     st.session_state.staged_assignments = []
-
+                    st.session_state["force_refresh_users"] = True
                     go_back()
 
                 else:
@@ -555,6 +555,8 @@ def main():
                     st.success("Usuario actualizado")
 
                     st.session_state.staged_assignments = []
+
+                    st.session_state["force_refresh_users"] = True
 
                     go_back()
 
