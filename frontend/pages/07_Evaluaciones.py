@@ -218,20 +218,24 @@ def page_new():
             st.experimental_rerun() if hasattr(st, "experimental_rerun") else st.rerun()
         return
 
+    # Mapa id -> datos para lookup estable sin depender de índices
+    options_by_id = {s[0]: s for s in options}
+
     col1, col2, col3 = st.columns([3, 1.2, 1])
     with col1:
-        student_idx = st.selectbox(
+        selected_sid = st.selectbox(
             "Selecciona al alumno",
-            options=list(range(len(options))),
-            format_func=lambda i: options[i][1],
+            options=[s[0] for s in options],
+            format_func=lambda sid: options_by_id[sid][1],
+            key="eval_student_select",
         )
     with col2:
         eval_date = st.date_input("Fecha de evaluación", value=date.today())
 
-    selected_grade = options[student_idx][2]
-    if selected_grade in (None, ""):
-        selected_grade = fetch_student_grade(options[student_idx][0])
-    grade_val = selected_grade
+    selected_student = options_by_id[selected_sid]
+    grade_val = selected_student[2]
+    if grade_val in (None, ""):
+        grade_val = fetch_student_grade(selected_sid)
 
     with col3:
         st.metric("Grado", grade_val if grade_val not in (None, "") else "N/D")
@@ -301,7 +305,7 @@ def page_new():
         st.experimental_rerun() if hasattr(st, "experimental_rerun") else st.rerun()
 
     if get_diag:
-        sid = options[student_idx][0]
+        sid = selected_sid
         answers_txt = [NUM_TO_TXT.get(v, "NUNCA") for v in responses_num]
         ok, data = ml_evaluate(sid, answers_txt, grade_val)
         if not ok:
@@ -321,7 +325,7 @@ def page_new():
                 "answers_num": responses_num,
                 "answers_txt": answers_txt,
                 "student_grade": grade_val,
-                "student_age": options[student_idx][3],
+                "student_age": selected_student[3],
             }
 
     if st.session_state.get("predicted"):
