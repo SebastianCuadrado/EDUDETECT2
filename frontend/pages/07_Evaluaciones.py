@@ -218,27 +218,28 @@ def page_new():
             st.experimental_rerun() if hasattr(st, "experimental_rerun") else st.rerun()
         return
 
+    col1, col2, col3 = st.columns([3, 1.2, 1])
+    with col1:
+        student_idx = st.selectbox(
+            "Selecciona al alumno",
+            options=list(range(len(options))),
+            format_func=lambda i: options[i][1],
+        )
+    with col2:
+        eval_date = st.date_input("Fecha de evaluación", value=date.today())
+    with col3:
+        selected_grade = options[student_idx][2]
+        if selected_grade in (None, ""):
+            selected_grade = fetch_student_grade(options[student_idx][0])
+    grade_val = selected_grade
+    st.text_input(
+            "Grado",
+            value="" if grade_val in (None, "") else str(grade_val),
+            disabled=True,
+            placeholder="N/D",
+        )
+
     with st.form("eval_form", clear_on_submit=False):
-        col1, col2, col3 = st.columns([3, 1.2, 1])
-        with col1:
-            student_idx = st.selectbox(
-                "Selecciona al alumno",
-                options=list(range(len(options))),
-                format_func=lambda i: options[i][1],
-            )
-        with col2:
-            eval_date = st.date_input("Fecha de evaluación", value=date.today())
-        with col3:
-            selected_grade = options[student_idx][2]
-            if selected_grade in (None, ""):
-                selected_grade = fetch_student_grade(options[student_idx][0])
-        grade_val = selected_grade
-        st.text_input(
-                "Grado",
-                value="" if grade_val in (None, "") else str(grade_val),
-                disabled=True,
-                placeholder="N/D",
-            )
 
         st.divider()
         st.caption("Escala: 1=NUNCA, 2=RARA VEZ, 3=A VECES, 4=FRECUENTEMENTE, 5=SIEMPRE")
