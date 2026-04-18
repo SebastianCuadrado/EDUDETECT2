@@ -87,6 +87,9 @@ with st.container():
                         )
                         if resp.status_code == 200:
                             data = resp.json()
+                            # Limpiar estado anterior para evitar que datos de otra sesión persistan
+                            for k in list(st.session_state.keys()):
+                                del st.session_state[k]
                             st.session_state.auth = True
                             st.session_state.username = data.get("user", {}).get("username", user)
                             st.session_state.token = data.get("token")
