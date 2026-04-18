@@ -240,6 +240,8 @@ def page_new():
     with col3:
         st.metric("Grado", grade_val if grade_val not in (None, "") else "N/D")
 
+    st.caption(f"DEBUG → alumno_id={selected_sid} | grado={grade_val} | todos_los_grados={[(s[0], s[1], s[2]) for s in options]}")
+
     with st.form("eval_form", clear_on_submit=False):
 
         st.divider()
