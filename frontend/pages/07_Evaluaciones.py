@@ -227,17 +227,14 @@ def page_new():
         )
     with col2:
         eval_date = st.date_input("Fecha de evaluación", value=date.today())
-    with col3:
-        selected_grade = options[student_idx][2]
-        if selected_grade in (None, ""):
-            selected_grade = fetch_student_grade(options[student_idx][0])
+
+    selected_grade = options[student_idx][2]
+    if selected_grade in (None, ""):
+        selected_grade = fetch_student_grade(options[student_idx][0])
     grade_val = selected_grade
-    st.text_input(
-            "Grado",
-            value="" if grade_val in (None, "") else str(grade_val),
-            disabled=True,
-            placeholder="N/D",
-        )
+
+    with col3:
+        st.metric("Grado", grade_val if grade_val not in (None, "") else "N/D")
 
     with st.form("eval_form", clear_on_submit=False):
 
