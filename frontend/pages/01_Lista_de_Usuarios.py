@@ -227,6 +227,28 @@ def role_badge_html(role: str) -> str:
     return f'<span class="role-badge {klass}">Rol: {role_up or "-"}</span>'
 
 
+@st.dialog("Confirmar eliminación")
+def modal_confirmar_eliminar_usuario():
+    uid = st.session_state.get("confirm_delete_user_id")
+    nombre = st.session_state.get("confirm_delete_user_name", "este usuario")
+    st.warning(f"¿Estás seguro de que deseas eliminar a **{nombre}**?")
+    st.caption("Esta acción no se puede deshacer.")
+    col1, col2 = st.columns(2)
+    if col1.button("Eliminar de todos modos", type="primary", use_container_width=True):
+        if delete_user(uid):
+            st.session_state.users_cache = [
+                x for x in st.session_state.get("users_cache", []) if x.get("id") != uid
+            ]
+            st.session_state["users_page"] = 1
+        st.session_state.pop("confirm_delete_user_id", None)
+        st.session_state.pop("confirm_delete_user_name", None)
+        st.rerun()
+    if col2.button("Cancelar", use_container_width=True):
+        st.session_state.pop("confirm_delete_user_id", None)
+        st.session_state.pop("confirm_delete_user_name", None)
+        st.rerun()
+
+
 def main():
     st.set_page_config(page_title="Gestión de Usuarios", page_icon="👥", layout="wide")
     ensure_auth("ADMIN")

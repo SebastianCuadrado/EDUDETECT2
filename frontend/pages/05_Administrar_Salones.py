@@ -63,15 +63,66 @@ def api_delete(path):
 
 def _safe_rerun():
     try:
-        # Streamlit >= 1.27
         st.rerun()
     except Exception:
         try:
-            # Compatibilidad con versiones anteriores
             if hasattr(st, "experimental_rerun"):
                 st.experimental_rerun()
         except Exception:
             pass
+
+
+@st.dialog("Confirmar eliminación")
+def modal_confirmar_eliminar_salon():
+    rid = st.session_state.get("confirm_delete_room_id")
+    nombre = st.session_state.get("confirm_delete_room_name", "este salón")
+    st.warning(f"¿Estás seguro de que deseas eliminar **{nombre}**?")
+    st.caption("Esta acción no se puede deshacer.")
+    col1, col2 = st.columns(2)
+    if col1.button("Eliminar de todos modos", type="primary", use_container_width=True):
+        ok, msg = api_delete(f"/classrooms/{rid}/")
+        if ok:
+            st.success("Salón eliminado")
+        else:
+            st.error(msg)
+        st.session_state.pop("confirm_delete_room_id", None)
+        st.session_state.pop("confirm_delete_room_name", None)
+        st.rerun()
+    if col2.button("Cancelar", use_container_width=True):
+        st.session_state.pop("confirm_delete_room_id", None)
+        st.session_state.pop("confirm_delete_room_name", None)
+        st.rerun()
+
+
+@st.dialog("Nuevo salón")
+def modal_crear_salon():
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        year = st.number_input("Año", min_value=2000, max_value=2100, value=date.today().year, step=1)
+    with c2:
+        grade = st.number_input("Grado", min_value=1, max_value=12, value=1, step=1)
+    with c3:
+        section = st.text_input("Sección", value="A", max_chars=2)
+    name = st.text_input("Nombre del salón *", max_chars=100)
+
+    col_crear, col_cancelar = st.columns(2)
+    if col_crear.button("Crear", type="primary", use_container_width=True):
+        if not name.strip():
+            st.error("El nombre del salón es obligatorio")
+        else:
+            ok, data = api_post(
+                "/classrooms/",
+                {"name": name.strip(), "academic_year": int(year), "grade": int(grade), "section": section, "school": SCHOOL_NAME},
+            )
+            if ok:
+                st.success("Salón creado correctamente")
+                st.session_state.show_create_room = False
+                _safe_rerun()
+            else:
+                st.error(str(data))
+    if col_cancelar.button("Cancelar", use_container_width=True):
+        st.session_state.show_create_room = False
+        _safe_rerun()
 
 
 def main():
@@ -95,16 +146,11 @@ def main():
     if "edit_room" not in st.session_state:
         st.session_state.edit_room = None
 
+    if st.button("➕ Nuevo salón", type="primary"):
+        modal_crear_salon()
+
     cols = st.columns(3, gap="large")
     idx = 0
-    with cols[idx]:
-        with st.container(border=True):
-            st.markdown("### ")
-            st.markdown("**Agregar salón**")
-            if st.button("Nuevo salón"):
-                st.session_state.show_create_room = True
-                _safe_rerun()
-    idx = (idx + 1) % 3
 
     for r in paged_rooms:
         with cols[idx]:
@@ -141,39 +187,13 @@ def main():
                     except Exception:
                         _safe_rerun()
                 if c3.button("Eliminar", key=f"room_del_{rid}"):
-                    ok, msg = api_delete(f"/classrooms/{rid}/")
-                    if ok:
-                        st.success("Salón eliminado")
-                        _safe_rerun()
-                    else:
-                        st.error(msg)
+                    st.session_state.confirm_delete_room_id = rid
+                    nombre_salon = (r.get('name') or "").strip() or f"{r.get('academic_year')} - {r.get('grade')}{r.get('section')}"
+                    st.session_state.confirm_delete_room_name = nombre_salon
         idx = (idx + 1) % 3
 
-    if st.session_state.show_create_room:
-        st.markdown("---")
-        st.subheader("Nuevo salón")
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            year = st.number_input("Año", min_value=2000, max_value=2100, value=date.today().year, step=1)
-        with c2:
-            grade = st.number_input("Grado", min_value=1, max_value=12, value=1, step=1)
-        with c3:
-            section = st.text_input("Sección", value="A", max_chars=2)
-        name = st.text_input("Nombre del salón*", max_chars=100)
-        if st.button("Guardar salón"):
-            if not name.strip():
-                st.error("El nombre del salón es obligatorio")
-            else:
-                ok, data = api_post(
-                    "/classrooms/",
-                    {"name": name.strip(), "academic_year": int(year), "grade": int(grade), "section": section, "school": SCHOOL_NAME},
-                )
-                if ok:
-                    st.success("Salón creado")
-                    st.session_state.show_create_room = False
-                    _safe_rerun()
-                else:
-                    st.error(str(data))
+    if "confirm_delete_room_id" in st.session_state:
+        modal_confirmar_eliminar_salon()
 
     edit_data = st.session_state.get("edit_room")
     if edit_data:
