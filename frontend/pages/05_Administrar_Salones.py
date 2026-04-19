@@ -72,6 +72,28 @@ def _safe_rerun():
             pass
 
 
+@st.dialog("Confirmar eliminación")
+def modal_confirmar_eliminar_salon():
+    rid = st.session_state.get("confirm_delete_room_id")
+    nombre = st.session_state.get("confirm_delete_room_name", "este salón")
+    st.warning(f"¿Estás seguro de que deseas eliminar **{nombre}**?")
+    st.caption("Esta acción no se puede deshacer.")
+    col1, col2 = st.columns(2)
+    if col1.button("Eliminar de todos modos", type="primary", use_container_width=True):
+        ok, msg = api_delete(f"/classrooms/{rid}/")
+        if ok:
+            st.success("Salón eliminado")
+        else:
+            st.error(msg)
+        st.session_state.pop("confirm_delete_room_id", None)
+        st.session_state.pop("confirm_delete_room_name", None)
+        st.rerun()
+    if col2.button("Cancelar", use_container_width=True):
+        st.session_state.pop("confirm_delete_room_id", None)
+        st.session_state.pop("confirm_delete_room_name", None)
+        st.rerun()
+
+
 @st.dialog("Nuevo salón")
 def modal_crear_salon():
     c1, c2, c3 = st.columns(3)
@@ -165,13 +187,13 @@ def main():
                     except Exception:
                         _safe_rerun()
                 if c3.button("Eliminar", key=f"room_del_{rid}"):
-                    ok, msg = api_delete(f"/classrooms/{rid}/")
-                    if ok:
-                        st.success("Salón eliminado")
-                        _safe_rerun()
-                    else:
-                        st.error(msg)
+                    st.session_state.confirm_delete_room_id = rid
+                    nombre_salon = (r.get('name') or "").strip() or f"{r.get('academic_year')} - {r.get('grade')}{r.get('section')}"
+                    st.session_state.confirm_delete_room_name = nombre_salon
         idx = (idx + 1) % 3
+
+    if "confirm_delete_room_id" in st.session_state:
+        modal_confirmar_eliminar_salon()
 
     edit_data = st.session_state.get("edit_room")
     if edit_data:

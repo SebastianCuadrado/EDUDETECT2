@@ -24,6 +24,30 @@ def _safe_rerun():
                 pass
 
 
+@st.dialog("Confirmar eliminación")
+def modal_confirmar_eliminar_alumno():
+    sid = st.session_state.get("confirm_delete_student_id")
+    nombre = st.session_state.get("confirm_delete_student_name", "este alumno")
+    st.warning(f"¿Estás seguro de que deseas eliminar a **{nombre}**?")
+    st.caption("Esta acción no se puede deshacer.")
+    col1, col2 = st.columns(2)
+    if col1.button("Eliminar de todos modos", type="primary", use_container_width=True):
+        ok, msg = delete_student(sid)
+        if ok:
+            st.success("Alumno eliminado")
+            st.session_state.pop("admin_students_cache", None)
+            st.session_state["admin_students_page"] = 1
+        else:
+            st.error(msg)
+        st.session_state.pop("confirm_delete_student_id", None)
+        st.session_state.pop("confirm_delete_student_name", None)
+        st.rerun()
+    if col2.button("Cancelar", use_container_width=True):
+        st.session_state.pop("confirm_delete_student_id", None)
+        st.session_state.pop("confirm_delete_student_name", None)
+        st.rerun()
+
+
 def auth_headers():
     token = st.session_state.get("token")
     return {"Authorization": f"Token {token}"} if token else {}
@@ -176,15 +200,11 @@ def main():
                     _safe_rerun()
 
             if b2.button("Eliminar", key=f"stu_del_{stu.get('id')}"):
-                ok, msg = delete_student(stu.get("id"))
-                if ok:
-                    st.success("Alumno eliminado")
-                    st.session_state["force_refresh_students"] = True
-                    st.session_state["admin_students_page"] = 1
-                    st.session_state.pop("admin_students_cache", None)
-                    _safe_rerun()
-                else:
-                    st.error(msg)
+                st.session_state.confirm_delete_student_id = stu.get("id")
+                st.session_state.confirm_delete_student_name = f"{stu.get('first_name','')} {stu.get('last_name','')}".strip()
+
+    if "confirm_delete_student_id" in st.session_state:
+        modal_confirmar_eliminar_alumno()
 
 
 if __name__ == "__main__":
