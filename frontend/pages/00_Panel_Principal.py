@@ -65,6 +65,9 @@ def main():
     render_topbar()
 
     role = (st.session_state.get("user") or {}).get("role", "")
+    if role == "ADMIN":
+        st.warning("El rol ADMIN no tiene acceso a este panel. Utiliza el menú lateral para navegar a Alumnos, Usuarios o Salones.")
+        st.stop()
 
     st.title("Panel de Evaluaciones")
 

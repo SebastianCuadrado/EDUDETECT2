@@ -1,4 +1,4 @@
-﻿import base64
+import base64
 import json
 import time
 from typing import Any, Dict
@@ -154,15 +154,111 @@ def ensure_auth(role: str | None = None):
 
 
 def render_sidebar_nav():
+    import streamlit as st
+    from ui_common import hydrate_auth_from_query, logout
+
     st.markdown(
         """
         <style>
         [data-testid="stSidebarNav"] { display: none; }
+
+        /* Sidebar fondo */
+        section[data-testid="stSidebar"] {
+            background: linear-gradient(180deg, #252733 0%, #222430 100%);
+            border-right: 1px solid rgba(255,255,255,0.06);
+        }
+
+        /* Padding */
+        section[data-testid="stSidebar"] > div {
+            padding-top: 1.2rem;
+            padding-bottom: 1rem;
+        }
+
+        /* Header */
+        .sidebar-title {
+            color: #f8fafc;
+            font-size: 1.9rem;
+            font-weight: 800;
+            margin-bottom: 0.2rem;
+        }
+
+        .sidebar-user {
+            color: #b8c0cc;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-divider {
+            border: none;
+            border-top: 1px solid rgba(255,255,255,0.10);
+            margin: 0.8rem 0 1rem 0;
+        }
+
+        /* Links */
+        section[data-testid="stSidebar"] .stPageLink a {
+            position: relative;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.75rem 0.9rem;
+            margin-bottom: 0.45rem;
+            border-radius: 12px;
+            color: #f8fafc !important;
+            text-decoration: none !important;
+            font-weight: 600;
+            transition: all 0.18s ease;
+        }
+
+        /* Hover */
+        section[data-testid="stSidebar"] .stPageLink a:hover:not([aria-current="page"]) {
+            background: rgba(255,255,255,0.07);
+        }
+
+        /* 🔥 ACTIVO */
+        section[data-testid="stSidebar"] .stPageLink a[aria-current="page"] {
+            background: rgba(255,255,255,0.12) !important;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+        }
+
+        /* 🔥 BARRA IZQUIERDA */
+        section[data-testid="stSidebar"] .stPageLink a[aria-current="page"]::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 8px;
+            bottom: 8px;
+            width: 4px;
+            border-radius: 4px;
+            background: #4f8cff;
+        }
+
+        /* Botón logout */
+        .logout-wrap {
+            margin-top: 1.2rem;
+        }
+
+        .logout-wrap .stButton > button {
+            width: 100%;
+            min-height: 48px;
+            border-radius: 12px;
+            font-weight: 700;
+            border: none;
+            background: linear-gradient(180deg, #ff5a5f 0%, #ff4d4f 100%);
+            color: white;
+            box-shadow: 0 10px 24px rgba(255, 77, 79, 0.18);
+        }
+
+        .logout-wrap .stButton > button:hover {
+            filter: brightness(1.03);
+        }
         </style>
         """,
         unsafe_allow_html=True,
     )
 
+    # Validación de sesión
     hydrate_auth_from_query()
     if not st.session_state.get("auth"):
         return
@@ -172,40 +268,42 @@ def render_sidebar_nav():
     role = user.get("role", "")
     is_admin = role == "ADMIN"
 
+    # Sidebar
     with st.sidebar:
-        st.markdown("### EduDetect")
-        st.caption(f"Conectado como {username} · {role}")
+        st.markdown(
+            f"""
+            <div class="sidebar-title">EduDetect</div>
+            <div class="sidebar-user">Conectado como {username} · {role}</div>
+            <hr class="sidebar-divider">
+            """,
+            unsafe_allow_html=True,
+        )
 
         page_link = getattr(st, "page_link", None)
+
         if page_link:
-            page_link("pages/00_Panel_Principal.py", label="Panel", icon="📊")
+            if not is_admin:
+                page_link("pages/00_Panel_Principal.py", label="Panel", icon="📊")
+
             if is_admin:
-                page_link("pages/08_Gestion_Alumnos.py", label="Alumnos", icon="🎓")
                 page_link("pages/01_Lista_de_Usuarios.py", label="Usuarios", icon="🧑‍💼")
+                page_link("pages/08_Gestion_Alumnos.py", label="Alumnos", icon="🎓")
                 page_link("pages/05_Administrar_Salones.py", label="Salones", icon="🏫")
             else:
                 page_link("pages/03_Historial_Alumnos_Evaluados.py", label="Alumnos", icon="🎓")
                 page_link("pages/07_Evaluaciones.py", label="Evaluaciones", icon="📝")
-        else:
-            st.markdown("- [Panel](pages/00_Panel_Principal.py)")
-            if is_admin:
-                st.markdown("- [Alumnos](pages/08_Gestion_Alumnos.py)")
-                st.markdown("- [Usuarios](pages/01_Lista_de_Usuarios.py)")
-                st.markdown("- [Salones](pages/05_Administrar_Salones.py)")
-            else:
-                st.markdown("- [Alumnos](pages/03_Historial_Alumnos_Evaluados.py)")
-                st.markdown("- [Evaluaciones](pages/07_Evaluaciones.py)")
 
-        st.divider()
+        # Logout
+        st.markdown('<div class="logout-wrap">', unsafe_allow_html=True)
         if st.button("Cerrar sesión", type="primary"):
             logout()
-
+        st.markdown("</div>", unsafe_allow_html=True)
 
 def render_topbar():
-    hydrate_auth_from_query()
-    if not st.session_state.get("auth"):
+     hydrate_auth_from_query()
+     if not st.session_state.get("auth"):
         return
-    user = st.session_state.get("user") or {}
-    username = user.get("username") or st.session_state.get("username", "")
-    role = user.get("role", "")
-    st.caption(f"Conectado: {username} · {role}")
+        user = st.session_state.get("user") or {}
+        username = user.get("username") or st.session_state.get("username", "")
+        role = user.get("role", "")
+        st.caption(f"Conectado: {username} · {role}")

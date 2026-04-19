@@ -1,4 +1,4 @@
-﻿import os
+import os
 import time
 from pathlib import Path
 import streamlit as st
@@ -11,116 +11,194 @@ except Exception:
 from ui_common import hydrate_auth_from_query, persist_auth_state
 
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000/api/v1")
-st.set_page_config(page_title="EduDetect - Login", page_icon="🔒", layout="wide")
+st.set_page_config(page_title="EduDetect - Login", page_icon="🎓", layout="wide" , initial_sidebar_state="collapsed")
 
 hydrate_auth_from_query()
 
-st.markdown(
-    """
-    <style>
-    [data-testid="stSidebarNav"] { display: none; }
-    :root { --card-bg: #ffffff0d; }
-    html, body, [class*="css"]  {
-        font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans';
-    }
-    .block-container {
-        padding-top: 4rem;
-        padding-bottom: 4rem;
-        max-width: 1000px;
-    }
-    .login-grid [data-testid="column"] { padding-top: 8px; padding-bottom: 8px; }
-    .left-pane { text-align: center; display: flex; flex-direction: column; align-items: center; }
-    .left-pane img { width: 320px; height: 280px; border-radius: 999px; background: linear-gradient(180deg, rgba(180,180,180,.6), rgba(140,140,140,.6)); padding: 12px; object-fit: contain; }
-    .logo-circle { width: 320px; height: 280px; border-radius: 999px; background: linear-gradient(180deg, rgba(180,180,180,.6), rgba(140,140,140,.6)); display: grid; place-items: center; color: #222; font-weight: 600; }
-    .tagline { margin: 16px auto 0 auto; padding: 0; font-weight: 600; text-align: center; }
-    .card { background: var(--card-bg); border: 1px solid rgba(128,128,128,0.25); border-radius: 16px; padding: 32px 28px; box-shadow: 0 12px 28px rgba(0,0,0,0.16); }
-    .login-title { text-align: center; letter-spacing: .04em; font-weight: 700; margin-bottom: 1rem; }
-    @media (max-width: 980px) { .block-container { padding-top: 2rem; padding-bottom: 2rem; } }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+# ===================== ESTILOS =====================
+st.markdown("""
+<style>
+[data-testid="stSidebar"] {
+    display: none !important;
+}
 
+[data-testid="stSidebarNav"] {
+    display: none !important;
+}
+
+[data-testid="collapsedControl"] {
+    display: none !important;
+}
+
+html, body, [class*="css"] {
+    font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.stApp {
+    background:
+        radial-gradient(circle at top left, rgba(30, 64, 175, 0.18), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.12), transparent 28%),
+        linear-gradient(135deg, #020617 0%, #031225 45%, #071426 100%);
+}
+
+.block-container {
+    max-width: 1200px;
+    padding-top: 2rem;
+}
+
+/* -------- IZQUIERDA -------- */
+
+.hero-box {
+    padding: 2rem 1rem 2rem 0.5rem;
+}
+
+
+.hero-title {
+    color: #f8fafc;
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+}
+
+.hero-subtitle {
+    color: #94a3b8;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+
+/* -------- LOGIN -------- */
+.login-card {
+    background: rgba(15, 23, 42, 0.85);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-top: 3rem;
+    max-width: 450px;
+}
+
+/* 🔥 TÍTULO MÁS ABAJO */
+.login-title {
+    color: #f8fafc;
+    font-size: 2rem;
+    font-weight: 800;
+    margin-top: 25px;
+    margin-bottom: 0.5rem;
+}
+
+
+
+/* INPUTS */
+div[data-testid="stTextInput"] input {
+    background: rgba(255,255,255,0.06) !important;
+    color: white !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+/* 🔥 BOTÓN MÁS SUAVE */
+.stButton > button,
+.stFormSubmitButton > button {
+    background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%) !important;
+    color: white !important;
+    border-radius: 12px !important;
+    min-height: 45px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.25);
+}
+
+/* HOVER */
+.stButton > button:hover,
+.stFormSubmitButton > button:hover {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+}
+
+.login-footer {
+    margin-top: 1rem;
+    text-align: center;
+    color: #64748b;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ===================== SESSION =====================
 if "auth" not in st.session_state:
     st.session_state.auth = False
-if "username" not in st.session_state:
-    st.session_state.username = ""
 
+# ===================== LOGO =====================
 default_logo = Path(__file__).resolve().parent / "assets" / "logo.png"
-env_logo = os.getenv("LOGO_PATH")
-logo_candidates = [Path(env_logo)] if env_logo else []
-logo_candidates += [default_logo, Path("frontend/assets/logo.png"), Path("assets/logo.png")]
-logo_path = next((p for p in logo_candidates if p.exists()), None)
+logo_path = default_logo if default_logo.exists() else None
 
-with st.container():
-    st.markdown('<div class="login-grid">', unsafe_allow_html=True)
-    col_left, col_right = st.columns([1, 1], gap="large")
+# ===================== LAYOUT =====================
+col1, col2 = st.columns([1, 1])
 
-    with col_left:
-        st.markdown('<div class="left-pane">', unsafe_allow_html=True)
-        if logo_path:
-            st.image(str(logo_path), output_format="PNG")
+# -------- IZQUIERDA --------
+with col1:
+    st.markdown('<div class="hero-box">', unsafe_allow_html=True)
+    st.markdown('<div class="hero-title">Bienvenido a EduDetect</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="hero-subtitle">Plataforma inteligente de detección temprana</div>',
+        unsafe_allow_html=True
+    )
+
+    if logo_path:
+        st.markdown('<div class="logo-card">', unsafe_allow_html=True)
+        st.image(str(logo_path), width=320)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown("**Prevención temprana para un futuro brillante**")
+
+# -------- DERECHA --------
+with col2:
+    st.markdown('<div class="hero-box">', unsafe_allow_html=True)
+
+    st.markdown('<div class="login-title">Iniciar sesión</div>', unsafe_allow_html=True)
+
+
+    with st.form("login_form"):
+        user = st.text_input("Usuario", placeholder="Ingrese su usuario")
+        pwd = st.text_input("Contraseña", type="password", placeholder="Ingrese su contraseña")
+        submit = st.form_submit_button("Ingresar", use_container_width=True)
+
+    # -------- LOGIN --------
+    if submit:
+        if not requests:
+            st.error("Instala requests: pip install requests")
         else:
-            st.markdown('<div class="logo-circle">Logo</div>', unsafe_allow_html=True)
-        st.markdown('<div class="tagline">Prevención temprana para un futuro brillante</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+            with st.spinner("Verificando..."):
+                try:
+                    resp = requests.post(
+                        f"{API_URL}/auth/login/",
+                        json={"username": user, "password": pwd},
+                        timeout=10,
+                    )
 
-    with col_right:
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown("<h3 class='login-title'>INICIAR SESIÓN</h3>", unsafe_allow_html=True)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        st.session_state.auth = True
+                        st.session_state.user = data.get("user", {})
+                        st.session_state.token = data.get("token")
 
-        with st.form("login_form", clear_on_submit=False):
-            user = st.text_input("Ingrese usuario", placeholder="tusuario...por ejemplo: FOREB")
-            pwd = st.text_input("Ingrese contraseña", type="password", placeholder="••••••••")
-            submit = st.form_submit_button("Ingresar", use_container_width=True)
+                        persist_auth_state()
+                        st.success("Bienvenido")
 
-        if submit:
-            if not requests:
-                st.error("Falta instalar 'requests'. Ejecuta: pip install requests")
-            else:
-                with st.spinner("Verificando credenciales..."):
-                    try:
-                        resp = requests.post(
-                            f"{API_URL}/auth/login/",
-                            json={"username": user, "password": pwd},
-                            timeout=10,
-                        )
-                        if resp.status_code == 200:
-                            data = resp.json()
-                            # Limpiar estado anterior para evitar que datos de otra sesión persistan
-                            for k in list(st.session_state.keys()):
-                                del st.session_state[k]
-                            st.session_state.auth = True
-                            st.session_state.username = data.get("user", {}).get("username", user)
-                            st.session_state.token = data.get("token")
-                            st.session_state.user = data.get("user", {})
-                            persist_auth_state()
-                            st.success("Sesión iniciada correctamente.")
-                            time.sleep(0.3)
-                            target = "pages/08_Gestion_Alumnos.py" if (st.session_state.user or {}).get("role") == "ADMIN" else "pages/00_Panel_Principal.py"
-                            try:
-                                if hasattr(st, "switch_page"):
-                                    st.switch_page(target)
-                            except Exception:
-                                pass
-                        else:
-                            try:
-                                detail = resp.json().get("detail")
-                            except Exception:
-                                detail = resp.text
-                            st.error(f"Error de inicio de sesión: {detail}")
-                    except Exception as exc:
-                        st.error(f"No se pudo conectar con la API: {exc}")
+                        time.sleep(0.5)
 
-        st.markdown('</div>', unsafe_allow_html=True)
+                        if hasattr(st, "switch_page"):
+                            target = "pages/01_Lista_de_Usuarios.py" if st.session_state.user.get("role") == "ADMIN" else "pages/00_Panel_Principal.py"
+                            st.switch_page(target)
+
+                    else:
+                        st.error("Credenciales incorrectas")
+
+                except Exception as e:
+                    st.error(f"Error conexión API: {e}")
 
     st.markdown('</div>', unsafe_allow_html=True)
 
+# ===================== REDIRECCIÓN =====================
 if st.session_state.auth:
     persist_auth_state()
-    target = "pages/08_Gestion_Alumnos.py" if (st.session_state.get("user") or {}).get("role") == "ADMIN" else "pages/00_Panel_Principal.py"
-    try:
-        if hasattr(st, "switch_page"):
-            st.switch_page(target)
-    except Exception:
-        pass
+    if hasattr(st, "switch_page"):
+        target = "pages/01_Lista_de_Usuarios.py" if (st.session_state.get("user") or {}).get("role") == "ADMIN" else "pages/00_Panel_Principal.py"
+        st.switch_page(target)
