@@ -4,7 +4,6 @@ import streamlit as st
 
 from ui_common import ensure_auth, paginate_list, render_sidebar_nav, render_topbar
 
-
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000/api/v1")
 
 
@@ -64,10 +63,168 @@ def safe_rerun():
         st.rerun()
     except Exception:
         if hasattr(st, "experimental_rerun"):
-            try:
-                st.experimental_rerun()
-            except Exception:
-                pass
+            st.experimental_rerun()
+
+
+def inject_styles():
+    st.markdown(
+        """
+        <style>
+        .main .block-container {
+            max-width: 1280px;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #f8fafc;
+            line-height: 1.05;
+            margin-bottom: 0.35rem;
+        }
+
+        .page-subtitle {
+            color: #94a3b8;
+            font-size: 1rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #f8fafc;
+            margin-top: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        div[data-testid="stTextInput"] > label {
+            display: none !important;
+        }
+
+        div[data-testid="stTextInput"] input {
+            border-radius: 14px !important;
+            min-height: 48px !important;
+        }
+
+        .stButton > button {
+            border-radius: 12px !important;
+            min-height: 44px !important;
+            font-weight: 600 !important;
+        }
+
+        .new-user-wrap .stButton > button {
+            min-height: 46px !important;
+            font-size: 1rem !important;
+        }
+
+        .search-align {
+            padding-top: 3px;
+            margin-bottom: 5px;
+        }
+
+        .search-align .stButton > button {
+            min-height: 48px !important;
+            margin-top: 0 !important;
+        }
+
+        .empty-box {
+            background: rgba(30, 64, 175, 0.18);
+            border: 1px solid rgba(96,165,250,0.18);
+            color: #bfdbfe;
+            border-radius: 16px;
+            padding: 18px;
+        }
+
+        .mid-wrap {
+            margin-top: 0.22rem;
+        }
+
+        .col-label {
+            color: #94a3b8;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.45rem;
+        }
+
+        .user-name {
+            color: #f8fafc;
+            font-size: 1.45rem;
+            font-weight: 800;
+            line-height: 1.15;
+            margin: 0;
+        }
+
+        .user-username {
+            color: #cbd5e1;
+            font-size: 0.98rem;
+            font-weight: 600;
+            line-height: 1.35;
+            margin: 0;
+        }
+
+        .user-email {
+            color: #60a5fa;
+            font-size: 0.98rem;
+            word-break: break-word;
+            margin-top: 0.22rem;
+        }
+
+        .meta-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 0.15rem;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            border: 1px solid transparent;
+        }
+
+        .role-admin {
+            background: rgba(59, 130, 246, 0.16);
+            color: #93c5fd;
+            border-color: rgba(59, 130, 246, 0.32);
+        }
+
+        .role-docente {
+            background: rgba(16, 185, 129, 0.14);
+            color: #6ee7b7;
+            border-color: rgba(16, 185, 129, 0.28);
+        }
+
+        .salon-pill {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.80rem;
+            font-weight: 600;
+            background: rgba(255,255,255,0.06);
+            color: #cbd5e1;
+            border: 1px solid rgba(255,255,255,0.10);
+        }
+
+        .actions-center {
+           margin-top: 0.22rem;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def role_badge_html(role: str) -> str:
+    role_up = (role or "").upper()
+    klass = "role-admin" if role_up == "ADMIN" else "role-docente"
+    return f'<span class="role-badge {klass}">Rol: {role_up or "-"}</span>'
 
 
 def main():
@@ -75,87 +232,129 @@ def main():
     ensure_auth("ADMIN")
     render_sidebar_nav()
     render_topbar()
+    inject_styles()
 
     if st.session_state.pop("force_refresh_users", False):
         st.session_state.pop("users_cache", None)
         safe_rerun()
 
-    st.title("Gestión de Usuarios")
+    st.markdown('<div class="page-title">Gestión de Usuarios</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="page-subtitle"></div>',
+        unsafe_allow_html=True,
+    )
 
-    # Botón nuevo usuario
-    col_new, _ = st.columns([1, 5])
-    if col_new.button("Nuevo usuario"):
-        st.session_state.selected_user_id = None
-        st.session_state.user_create_mode = True
-        try:
+    col_new, _ = st.columns([1.2, 4.8])
+    with col_new:
+        st.markdown('<div class="new-user-wrap">', unsafe_allow_html=True)
+        if st.button("Nuevo usuario", use_container_width=True):
+            st.session_state.selected_user_id = None
+            st.session_state.user_create_mode = True
             if hasattr(st, "switch_page"):
                 st.switch_page("pages/11_Editar_Usuario.py")
                 return
-        except Exception:
-            pass
-        safe_rerun()
+            safe_rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    # Filtro
-    c_search, c_btn = st.columns([4, 1])
-    with c_search:
-        q = st.text_input("Buscar", placeholder="username, nombre, email")
-    with c_btn:
+    st.write("")
+
+    search_col, btn_col = st.columns([5.4, 1.3], gap="small")
+    with search_col:
+        q = st.text_input(
+            label="Buscar",
+            placeholder="Buscar por username, nombre o correo",
+            #label_visibility="collapsed",
+        )
+    with btn_col:
+        st.markdown('<div class="search-align">', unsafe_allow_html=True)
         do_search = st.button("Buscar", use_container_width=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
     if do_search or "users_cache" not in st.session_state:
         st.session_state.users_cache = fetch_users(q)
         st.session_state["users_page"] = 1
+
     users = st.session_state.get("users_cache", [])
 
-    st.markdown("### Lista de usuarios")
+    st.write("")
+    st.markdown('<div class="section-title">Lista de usuarios</div>', unsafe_allow_html=True)
+
     if not users:
-        st.info("Sin usuarios para mostrar.")
+        st.markdown('<div class="empty-box">No hay usuarios para mostrar.</div>', unsafe_allow_html=True)
         return
 
     paged_users, _, _, _ = paginate_list(users, "users_page", page_size=10)
 
-    # Cargar conteo de salones asignados por docente
-    teacher_ids = [u.get("id") for u in paged_users if (u.get("role") or "").upper() in ("DOCENTE", "TEACHER", "PROFESOR")]
+    teacher_ids = [
+        u.get("id")
+        for u in paged_users
+        if (u.get("role") or "").upper() in ("DOCENTE", "TEACHER", "PROFESOR")
+    ]
     assign_counts = fetch_assignments_count(teacher_ids) if teacher_ids else {}
 
-    # Tarjetas similares al listado de alumnos
     for u in paged_users:
         uid = u.get("id")
         username = u.get("username") or ""
         nombre = ((u.get("first_name") or "") + " " + (u.get("last_name") or "")).strip()
         email = u.get("email") or "-"
         role = u.get("role") or "-"
-        role_up = (role or "").upper()
+        role_up = role.upper() if role else ""
         salons = assign_counts.get(uid) if role_up in ("DOCENTE", "TEACHER", "PROFESOR") else None
 
         with st.container(border=True):
-            c1, c2, c3 = st.columns([3.2, 3.2, 2])
-            c1.write(nombre or username)
-            c2.caption(f"{username} · {email}")
-            if salons is None:
-                c3.caption(f"Rol: {role}")
-            else:
-                c3.caption(f"Rol: {role} · Salones: {salons}")
+            name_col, user_col, role_col, action_col = st.columns([2.5, 2.2, 2.0, 2.1], gap="medium")
 
-            btn_col = c3.columns(2)
-            if btn_col[0].button("Editar", key=f"upd_{uid}", help="Editar usuario"):
-                st.session_state.selected_user_id = uid
-                st.session_state.user_create_mode = False
-                try:
+            with name_col:
+                st.markdown('<div class="mid-wrap">', unsafe_allow_html=True)
+                st.markdown(
+                    f'<div class="user-name">{nombre or username or "Sin nombre"}</div>',
+                    unsafe_allow_html=True,
+                )
+                st.markdown("</div>", unsafe_allow_html=True)
+
+            with user_col:
+                st.markdown('<div class="mid-wrap">', unsafe_allow_html=True)
+                st.markdown(
+                    f'<div class="user-username">@{username if username else "-"}</div>',
+                    unsafe_allow_html=True,
+                )
+                st.markdown(
+                    f'<div class="user-email">{email}</div>',
+                    unsafe_allow_html=True,
+                )
+                st.markdown("</div>", unsafe_allow_html=True)
+
+            with role_col:
+                st.markdown('<div class="mid-wrap">', unsafe_allow_html=True)
+                meta_html = role_badge_html(role)
+                if salons is not None:
+                    meta_html += f' <span class="salon-pill">Salones: {salons}</span>'
+                st.markdown(f'<div class="meta-wrap">{meta_html}</div>', unsafe_allow_html=True)
+                st.markdown("</div>", unsafe_allow_html=True)
+
+            with action_col:
+                st.markdown('<div class="actions-center">', unsafe_allow_html=True)
+                b1, b2 = st.columns(2, gap="small")
+
+                if b1.button("Editar", key=f"upd_{uid}", use_container_width=True):
+                    st.session_state.selected_user_id = uid
+                    st.session_state.user_create_mode = False
                     if hasattr(st, "switch_page"):
                         st.switch_page("pages/11_Editar_Usuario.py")
                         return
-                except Exception:
-                    pass
-                safe_rerun()
-
-            if btn_col[1].button("Eliminar", key=f"del_{uid}", help="Eliminar usuario"):
-                if delete_user(uid):
-                    st.session_state.users_cache = [
-                        x for x in st.session_state.users_cache if x.get("id") != uid
-                    ]
-                    st.session_state["users_page"] = 1
                     safe_rerun()
+
+                if b2.button("Eliminar", key=f"del_{uid}", use_container_width=True):
+                    if delete_user(uid):
+                        st.session_state.users_cache = [
+                            x for x in st.session_state.users_cache if x.get("id") != uid
+                        ]
+                        st.session_state["users_page"] = 1
+                        safe_rerun()
+
+                st.markdown("</div>", unsafe_allow_html=True)
+
+        st.write("")
 
 
 if __name__ == "__main__":
