@@ -118,26 +118,59 @@ def logout():
 def paginate_list(items, key: str, page_size: int = 10, label: str | None = None):
     total = len(items)
     total_pages = max(1, (total + page_size - 1) // page_size)
-    page = st.session_state.get(key, 1)
+
+    if key not in st.session_state:
+        st.session_state[key] = 1
+
+    if st.session_state[key] > total_pages:
+        st.session_state[key] = total_pages
+    if st.session_state[key] < 1:
+        st.session_state[key] = 1
+
+    page = st.session_state[key]
 
     if total_pages > 1:
-        prev_col, info_col, next_col = st.columns([1, 4, 1])
-        if prev_col.button("Anterior", key=f"{key}_prev", disabled=page <= 1):
-            page = max(1, page - 1)
-        if next_col.button("Siguiente", key=f"{key}_next", disabled=page >= total_pages):
-            page = min(total_pages, page + 1)
-        st.session_state[key] = page
+        st.markdown('<div class="pagination-wrap">', unsafe_allow_html=True)
+
+        prev_col, info_col, next_col = st.columns([1, 2, 1])
+
+        with prev_col:
+            if st.button("Anterior", key=f"{key}_prev", disabled=page <= 1, use_container_width=True):
+                st.session_state[key] = page - 1
+                st.rerun()
+
         start = (page - 1) * page_size
         end = min(start + page_size, total)
-        info_col.caption(f"... {page} de {total_pages} · {start+1}-{end} de {total}")
+
+        texto = f"Página <b>{page}</b> de <b>{total_pages}</b> · Mostrando <b>{start+1}-{end}</b> de <b>{total}</b>"
+        if label:
+            texto = f"{label} · {texto}"
+
+        with info_col:
+            st.markdown(
+                f"""
+                <div style="text-align:center; padding-top:0.45rem; font-size:0.95rem; color:#b8bcc8;">
+                    {texto}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+        with next_col:
+            if st.button("Siguiente", key=f"{key}_next", disabled=page >= total_pages, use_container_width=True):
+                st.session_state[key] = page + 1
+                st.rerun()
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
     else:
         st.session_state[key] = 1
-    # slice
-    page = st.session_state.get(key, 1)
+        page = 1
+
     start = (page - 1) * page_size
     end = min(start + page_size, total)
-    return items[start:end], page, total_pages, total
 
+    return items[start:end], page, total_pages, total
 
 
 def ensure_auth(role: str | None = None):
