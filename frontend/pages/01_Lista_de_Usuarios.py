@@ -69,10 +69,10 @@ def inject_styles():
     st.markdown(
         """
         <style>
+
         .main .block-container {
             max-width: 1280px;
-            padding-top: 2rem;
-            padding-bottom: 2rem;
+            
         }
 
         .page-title {
@@ -93,17 +93,21 @@ def inject_styles():
             font-size: 2rem;
             font-weight: 800;
             color: #f8fafc;
-            margin-top: 0.8rem;
             margin-bottom: 1rem;
         }
 
-        div[data-testid="stTextInput"] > label {
-            display: none !important;
+        div[data-testid="stTextInput"] {
+            margin-top: 0 !important;
         }
 
         div[data-testid="stTextInput"] input {
             border-radius: 14px !important;
-            min-height: 48px !important;
+            height: 40px !important;
+        }
+
+        div[data-testid="column"] {
+            display: flex;
+            align-items: end;
         }
 
         .stButton > button {
@@ -117,14 +121,9 @@ def inject_styles():
             font-size: 1rem !important;
         }
 
-        .search-align {
-            padding-top: 3px;
-            margin-bottom: 5px;
-        }
-
-        .search-align .stButton > button {
-            min-height: 48px !important;
-            margin-top: 0 !important;
+        input {
+            height: 40px !important;
+            border-radius: 10px !important;
         }
 
         .empty-box {
@@ -272,9 +271,8 @@ def main():
             safe_rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
-    st.write("")
 
-    search_col, btn_col = st.columns([5.4, 1.3], gap="small")
+    search_col, btn_col = st.columns([5, 1.2], gap="small")
     with search_col:
         q = st.text_input(
             label="",
@@ -282,9 +280,7 @@ def main():
             label_visibility="collapsed",
         )
     with btn_col:
-        st.markdown('<div class="search-align">', unsafe_allow_html=True)
         do_search = st.button("Buscar", use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
 
     if do_search or "users_cache" not in st.session_state:
         st.session_state.users_cache = fetch_users(q)
@@ -292,7 +288,6 @@ def main():
 
     users = st.session_state.get("users_cache", [])
 
-    st.write("")
     st.markdown('<div class="section-title">Lista de usuarios</div>', unsafe_allow_html=True)
 
     if not users:

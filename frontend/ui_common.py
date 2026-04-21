@@ -114,6 +114,19 @@ def logout():
         if hasattr(st, "experimental_rerun"):
             st.experimental_rerun()
 
+    st.markdown("""
+    <style>
+    .pagination-wrap {
+        margin: 0.3rem 0 0.6rem 0; /* antes era más grande */
+        padding: 0;
+    }
+    .pagination-wrap .stButton > button {
+        min-height: 36px !important;
+        padding: 0.3rem 0.6rem !important;
+        font-size: 0.85rem !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 def paginate_list(items, key: str, page_size: int = 10, label: str | None = None):
     total = len(items)
