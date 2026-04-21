@@ -49,7 +49,6 @@ def delete_user(user_id: int) -> bool:
     try:
         r = requests.delete(f"{API_URL}/users/{user_id}/", headers=auth_headers(), timeout=12)
         if r.status_code in (204, 200):
-            st.success("Usuario eliminado")
             return True
         st.error(f"Error {r.status_code}: {r.text}")
         return False
@@ -140,15 +139,6 @@ def inject_styles():
             margin-top: 0.22rem;
         }
 
-        .col-label {
-            color: #94a3b8;
-            font-size: 0.82rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            margin-bottom: 0.45rem;
-        }
-
         .user-name {
             color: #f8fafc;
             font-size: 1.45rem;
@@ -213,7 +203,7 @@ def inject_styles():
         }
 
         .actions-center {
-           margin-top: 0.22rem;
+            margin-top: 0.22rem;
         }
         </style>
         """,
@@ -231,22 +221,27 @@ def role_badge_html(role: str) -> str:
 def modal_confirmar_eliminar_usuario():
     uid = st.session_state.get("confirm_delete_user_id")
     nombre = st.session_state.get("confirm_delete_user_name", "este usuario")
+
     st.warning(f"¿Estás seguro de que deseas eliminar a **{nombre}**?")
     st.caption("Esta acción no se puede deshacer.")
+
     col1, col2 = st.columns(2)
+
     if col1.button("Eliminar de todos modos", type="primary", use_container_width=True):
         if delete_user(uid):
-            st.session_state.users_cache = [
+            st.session_state["users_cache"] = [
                 x for x in st.session_state.get("users_cache", []) if x.get("id") != uid
             ]
             st.session_state["users_page"] = 1
+
         st.session_state.pop("confirm_delete_user_id", None)
         st.session_state.pop("confirm_delete_user_name", None)
-        st.rerun()
+        safe_rerun()
+
     if col2.button("Cancelar", use_container_width=True):
         st.session_state.pop("confirm_delete_user_id", None)
         st.session_state.pop("confirm_delete_user_name", None)
-        st.rerun()
+        safe_rerun()
 
 
 def main():
@@ -261,20 +256,19 @@ def main():
         safe_rerun()
 
     st.markdown('<div class="page-title">Gestión de Usuarios</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="page-subtitle"></div>',
-        unsafe_allow_html=True,
-    )
+    st.markdown('<div class="page-subtitle"></div>', unsafe_allow_html=True)
 
     col_new, _ = st.columns([1.2, 4.8])
     with col_new:
         st.markdown('<div class="new-user-wrap">', unsafe_allow_html=True)
-        if st.button("Nuevo usuario", use_container_width=True):
+        if st.button("➕ Nuevo usuario", type="primary",use_container_width=True):
             st.session_state.selected_user_id = None
-            st.session_state.user_create_mode = True
+            st.session_state.pop("user_create_mode", None)
+
             if hasattr(st, "switch_page"):
-                st.switch_page("pages/11_Editar_Usuario.py")
+                st.switch_page("pages/02_Registrar_Usuario.py")
                 return
+
             safe_rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -283,9 +277,9 @@ def main():
     search_col, btn_col = st.columns([5.4, 1.3], gap="small")
     with search_col:
         q = st.text_input(
-            label="Buscar",
+            label="",
             placeholder="Buscar por username, nombre o correo",
-            #label_visibility="collapsed",
+            label_visibility="collapsed",
         )
     with btn_col:
         st.markdown('<div class="search-align">', unsafe_allow_html=True)
@@ -360,23 +354,24 @@ def main():
 
                 if b1.button("Editar", key=f"upd_{uid}", use_container_width=True):
                     st.session_state.selected_user_id = uid
-                    st.session_state.user_create_mode = False
+                    st.session_state.pop("user_create_mode", None)
+
                     if hasattr(st, "switch_page"):
                         st.switch_page("pages/11_Editar_Usuario.py")
                         return
+
                     safe_rerun()
 
                 if b2.button("Eliminar", key=f"del_{uid}", use_container_width=True):
-                    if delete_user(uid):
-                        st.session_state.users_cache = [
-                            x for x in st.session_state.users_cache if x.get("id") != uid
-                        ]
-                        st.session_state["users_page"] = 1
-                        safe_rerun()
+                    st.session_state["confirm_delete_user_id"] = uid
+                    st.session_state["confirm_delete_user_name"] = nombre or username or "este usuario"
 
                 st.markdown("</div>", unsafe_allow_html=True)
 
         st.write("")
+
+    if "confirm_delete_user_id" in st.session_state:
+        modal_confirmar_eliminar_usuario()
 
 
 if __name__ == "__main__":
