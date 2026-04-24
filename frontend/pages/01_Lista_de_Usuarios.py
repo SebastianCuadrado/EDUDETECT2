@@ -253,29 +253,17 @@ def main():
     if st.session_state.pop("force_refresh_users", False):
         st.session_state.pop("users_cache", None)
         safe_rerun()
+        
 
     st.markdown('<div class="page-title">Gestión de Usuarios</div>', unsafe_allow_html=True)
-    st.markdown('<div class="page-subtitle"></div>', unsafe_allow_html=True)
-
-    col_new, _ = st.columns([1.2, 4.8])
-    with col_new:
-        st.markdown('<div class="new-user-wrap">', unsafe_allow_html=True)
-        if st.button("➕ Nuevo usuario", type="primary",use_container_width=True):
-            st.session_state.selected_user_id = None
-            st.session_state.pop("user_create_mode", None)
-
-            if hasattr(st, "switch_page"):
-                st.switch_page("pages/02_Registrar_Usuario.py")
-                return
-
-            safe_rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
 
 
+
+    st.write(" ")
     search_col, btn_col = st.columns([5, 1.2], gap="small")
     with search_col:
         q = st.text_input(
-            label="",
+            label="Buscar usuario",
             placeholder="Buscar por username, nombre o correo",
             label_visibility="collapsed",
         )
@@ -288,7 +276,23 @@ def main():
 
     users = st.session_state.get("users_cache", [])
 
-    st.markdown('<div class="section-title">Lista de usuarios</div>', unsafe_allow_html=True)
+    title1_col, btn1_col = st.columns([4, 1])
+
+    with title1_col:
+        st.markdown('<div class="section-title">Lista de usuarios</div>', unsafe_allow_html=True)
+
+    with btn1_col:
+        st.markdown('<div class="new-user-wrap">', unsafe_allow_html=True)
+        if st.button("➕ Nuevo usuario", type="primary",use_container_width=True):
+            st.session_state.selected_user_id = None
+            st.session_state.pop("user_create_mode", None)
+
+            if hasattr(st, "switch_page"):
+                st.switch_page("pages/02_Registrar_Usuario.py")
+                return
+
+            safe_rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
 
     if not users:
         st.markdown('<div class="empty-box">No hay usuarios para mostrar.</div>', unsafe_allow_html=True)
