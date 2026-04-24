@@ -45,6 +45,8 @@ html, body, [class*="css"] {
     max-width: 1200px;
     padding-top: 2rem;
 }
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
 
 /* -------- IZQUIERDA -------- */
 
