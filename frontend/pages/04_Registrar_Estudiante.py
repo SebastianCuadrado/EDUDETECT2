@@ -16,28 +16,28 @@ def auth_headers():
 
 
 def api_get(path, params=None):
-    r = requests.get(f"{API_URL}{path}", headers=auth_headers(), params=params, timeout=20)
+    r = requests.get(
+        f"{API_URL}{path}",
+        headers=auth_headers(),
+        params=params,
+        timeout=20
+    )
     r.raise_for_status()
     data = r.json()
     return data.get("results", data)
 
 
-def create_student(payload: dict, photo_file):
-    url = f"{API_URL}/students/"
-    if photo_file is not None:
-        files = {
-            "photo": (
-                getattr(photo_file, "name", "photo.jpg"),
-                photo_file.getvalue(),
-                getattr(photo_file, "type", "application/octet-stream"),
-            )
-        }
-        data = {k: v for k, v in payload.items() if v is not None}
-        r = requests.post(url, headers=auth_headers(), data=data, files=files, timeout=20)
-    else:
-        r = requests.post(url, headers=auth_headers() | {"Content-Type": "application/json"}, json=payload, timeout=20)
+def create_student(payload: dict):
+    r = requests.post(
+        f"{API_URL}/students/",
+        headers=auth_headers() | {"Content-Type": "application/json"},
+        json=payload,
+        timeout=20
+    )
+
     if r.status_code in (200, 201):
         return True, r.json()
+
     try:
         return False, r.json()
     except Exception:
@@ -50,90 +50,169 @@ def enroll_student(student_id: int, classroom_id: int, start_date: date | None =
         "classroom": classroom_id,
         "start_date": start_date.isoformat() if start_date else None,
     }
+
     r = requests.post(
-        f"{API_URL}/enrollments/", headers=auth_headers() | {"Content-Type": "application/json"}, json=payload, timeout=20
+        f"{API_URL}/enrollments/",
+        headers=auth_headers() | {"Content-Type": "application/json"},
+        json=payload,
+        timeout=20
     )
+
     if r.status_code in (200, 201):
         return True, r.json()
+
     try:
         return False, r.json()
     except Exception:
         return False, {"detail": r.text}
 
 
+def go_back():
+    if hasattr(st, "switch_page"):
+        st.switch_page("pages/08_Gestion_Alumnos.py")
+    else:
+        st.rerun()
+
+
 def main():
-    st.set_page_config(page_title="Registrar Estudiante", page_icon="🎓", layout="wide")
+    st.set_page_config(
+        page_title="Nuevo alumno",
+        page_icon="🎓",
+        layout="wide"
+    )
+
     ensure_auth("ADMIN")
     render_sidebar_nav()
     render_topbar()
 
-    st.title("Registrar Estudiante")
+    col_title, col_back = st.columns([5, 1])
+
+    with col_title:
+        st.title("Nuevo alumno")
+
+    with col_back:
+        if st.button("Volver ", type="primary"):
+            go_back()
 
     classrooms = api_get("/classrooms/")
-    room_opts = [(c.get("id"), f"{c.get('academic_year')} - {c.get('grade')}{c.get('section')}") for c in classrooms]
+    room_opts = [
+        (
+            c.get("id"),
+            f"{c.get('academic_year')} - {c.get('grade')}{c.get('section')}"
+        )
+        for c in classrooms
+    ]
 
     with st.form("student_form", clear_on_submit=False):
+        st.markdown("### Datos del alumno")
+
         c1, c2 = st.columns(2)
+
         with c1:
-            dni = st.text_input("DNI*", max_chars=15)
             first_name = st.text_input("Nombres*")
-            birth_date = st.date_input("Fecha de nacimiento", value=None)
-            phone = st.text_input("Teléfono")
-        with c2:
             last_name = st.text_input("Apellidos*")
-            gender = st.selectbox("Género", options=["", "M", "F", "O"], index=0)
-            email = st.text_input("Correo")
+            age = st.number_input(
+                "Edad*",
+                min_value=5,
+                max_value=18,
+                value=7,
+                step=1
+            )
+
+        with c2:
+            gender = st.selectbox(
+                "Género",
+                options=["", "M", "F"],
+                format_func=lambda x: {
+                    "": "Seleccione",
+                    "M": "Masculino",
+                    "F": "Femenino"
+                }.get(x, x)
+            )
 
         st.markdown("---")
-        st.caption("Foto del alumno (opcional)")
-        photo = st.file_uploader("Selecciona una imagen", type=["png", "jpg", "jpeg"], accept_multiple_files=False)
+        st.markdown("### Matrícula inicial")
 
-        st.markdown("---")
-        st.subheader("Matrícula")
+        selected_room_id = None
+
         if room_opts:
-            idx = st.selectbox("Salón*", options=list(range(len(room_opts))), format_func=lambda i: room_opts[i][1])
-            selected_room_id = room_opts[idx][0]
-        else:
-            st.error("No hay salones creados. Ve a 'Salones' y crea uno primero.")
-            selected_room_id = None
-        start_d = st.date_input("Fecha de inicio (opcional)", value=None)
+            room_options = [None] + room_opts
 
-        submitted = st.form_submit_button("Registrar", use_container_width=True)
+            selected_room = st.selectbox(
+                "Salón*",
+                options=room_options,
+                format_func=lambda x: "Seleccione un salón" if x is None else x[1]
+            )
+
+            selected_room_id = selected_room[0] if selected_room else None
+        else:
+            st.error("No hay salones creados. Primero debes crear un salón.")
+
+        start_d = st.date_input(
+            "Fecha de inicio (opcional)",
+            value=None
+        )
+
+        c_cancel, c_save = st.columns([1, 1])
+
+        cancel = c_cancel.form_submit_button(
+            "Cancelar",
+            type="secondary",
+            use_container_width=True
+        )
+
+        submitted = c_save.form_submit_button(
+            "Registrar",
+            type="primary",
+            use_container_width=True
+        )
+
+    if cancel:
+        go_back()
 
     if submitted:
-        if not all([dni, first_name, last_name, selected_room_id]):
-            st.error("Completa los campos obligatorios (*) y selecciona un salón")
+        if not first_name.strip() or not last_name.strip() or not selected_room_id:
+            st.error("Completa los campos obligatorios (*) y selecciona un salón.")
             return
+
         payload = {
-            "dni": dni,
-            "first_name": first_name,
-            "last_name": last_name,
-            "birth_date": birth_date.isoformat() if birth_date else None,
+            "first_name": first_name.strip(),
+            "last_name": last_name.strip(),
+            "age": age,
             "gender": gender or "",
-            "email": email or "",
-            "phone": phone or "",
         }
-        with st.spinner("Creando estudiante..."):
-            ok, data = create_student(payload, photo)
-            if not ok:
-                if isinstance(data, dict):
-                    for k, v in data.items():
-                        st.error(f"{k}: {v}")
-                else:
-                    st.error(str(data))
-                return
-            st.success(f"Estudiante '{first_name} {last_name}' creado correctamente")
-            student_id = data.get("id")
+
+        with st.spinner("Registrando alumno..."):
+            ok, data = create_student(payload)
+
+        if not ok:
+            if isinstance(data, dict):
+                for k, v in data.items():
+                    st.error(f"{k}: {v}")
+            else:
+                st.error(str(data))
+            return
+
+        student_id = data.get("id")
 
         if student_id and selected_room_id:
-            with st.spinner("Matriculando estudiante..."):
+            with st.spinner("Registrando matrícula..."):
                 oke, _ = enroll_student(student_id, selected_room_id, start_d)
-                if oke:
-                    st.success("Matrícula registrada")
-                else:
-                    st.warning("Estudiante creado. Falló la matrícula")
+
+            if not oke:
+                st.warning("El alumno fue creado, pero falló la matrícula inicial.")
+                return
+
+        st.session_state.pop("admin_students_cache", None)
+        st.session_state.pop("enrollment_cache", None)
+        st.session_state["admin_students_page"] = 1
+        st.session_state["force_refresh_students"] = True
+
+        if hasattr(st, "switch_page"):
+            st.switch_page("pages/08_Gestion_Alumnos.py")
+        else:
+            st.rerun()
 
 
 if __name__ == "__main__":
     main()
-
