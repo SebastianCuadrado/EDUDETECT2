@@ -208,6 +208,12 @@ def render_sidebar_nav():
         <style>
         [data-testid="stSidebarNav"] { display: none; }
 
+        /* Ocultar instrucciones de Input "Press enter..." globalmente */
+        div[data-testid="InputInstructions"] {
+            display: none !important;
+            visibility: hidden !important;
+        }
+
         /* Sidebar fondo */
         section[data-testid="stSidebar"] {
             background: linear-gradient(180deg, #252733 0%, #222430 100%);

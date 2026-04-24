@@ -88,6 +88,11 @@ html, body, [class*="css"] {
 
 
 /* INPUTS */
+div[data-testid="InputInstructions"] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
 div[data-testid="stTextInput"] input {
     background: rgba(255,255,255,0.06) !important;
     color: white !important;

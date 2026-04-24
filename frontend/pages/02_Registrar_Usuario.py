@@ -155,6 +155,11 @@ def inject_styles():
         div[data-testid="stCheckbox"] {
             margin-top: 1.9rem;
         }
+
+        div[data-testid="InputInstructions"] {
+            display: none !important;
+            visibility: hidden !important;
+        }
         </style>
         """,
         unsafe_allow_html=True,
@@ -172,6 +177,8 @@ def validate_required(username: str, first_name: str, email: str, dni: str, pass
         missing.append("Correo")
     if not dni.strip():
         missing.append("DNI")
+    elif not dni.strip().isdigit() or len(dni.strip()) != 8:
+        missing.append("DNI (debe tener exactamente 8 dígitos numéricos)")
     if not password.strip():
         missing.append("Contraseña")
 
@@ -233,8 +240,8 @@ def main():
 
         with c2:
             email = st.text_input("Correo *")
-            dni = st.text_input("DNI *")
-            phone = st.text_input("Telefono")
+            dni = st.text_input("DNI *", max_chars=8)
+            phone = st.text_input("Telefono", max_chars=9)
 
         password = st.text_input("Contrasena *", type="password")
 

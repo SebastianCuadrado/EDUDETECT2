@@ -152,6 +152,11 @@ def inject_styles():
         div[data-testid="stCheckbox"] {
             margin-top: 1.9rem;
         }
+
+        div[data-testid="InputInstructions"] {
+            display: none !important;
+            visibility: hidden !important;
+        }
         </style>
         """,
         unsafe_allow_html=True,
@@ -223,8 +228,8 @@ def main():
 
         with c2:
             email = st.text_input("Correo", value=user.get("email") or "")
-            dni = st.text_input("DNI", value=user.get("dni") or "")
-            phone = st.text_input("Telefono", value=user.get("phone") or "")
+            dni = st.text_input("DNI", value=user.get("dni") or "", max_chars=8)
+            phone = st.text_input("Telefono", value=user.get("phone") or "", max_chars=9)
 
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -355,6 +360,10 @@ def main():
         go_back()
 
     if save:
+        if dni.strip() and (not dni.strip().isdigit() or len(dni.strip()) != 8):
+            st.error("El DNI debe tener exactamente 8 dígitos numéricos.")
+            return
+
         payload = {
             "username": username,
             "first_name": first_name,

@@ -31,6 +31,12 @@ class UserSerializer(serializers.ModelSerializer):
         name = f"{obj.first_name} {obj.last_name}".strip()
         return name or obj.username
 
+    def validate_dni(self, value):
+        if value:
+            if not value.isdigit() or len(value) != 8:
+                raise serializers.ValidationError("El DNI debe tener exactamente 8 dígitos numéricos.")
+        return value
+
     def create(self, validated_data):
         password = validated_data.pop("password", None)
         user = User(**validated_data)
