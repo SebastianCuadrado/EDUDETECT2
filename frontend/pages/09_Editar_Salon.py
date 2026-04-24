@@ -28,96 +28,188 @@ def api_patch(path, payload):
         json=payload,
         timeout=20,
     )
+
     if r.status_code in (200, 202):
         return True, r.json()
+
     try:
         return False, r.json()
     except Exception:
         return False, {"detail": r.text}
 
 
-def _safe_go_back():
-    try:
-        if hasattr(st, 'switch_page'):
-            st.switch_page('pages/05_Administrar_Salones.py')
-            return
-    except Exception:
-        pass
-    st.stop()
+def go_back():
+    st.session_state.pop("classrooms_cache", None)
+
+    if hasattr(st, "switch_page"):
+        st.switch_page("pages/05_Administrar_Salones.py")
+    else:
+        st.rerun()
+
+
+def inject_styles():
+    st.markdown("""
+    <style>
+    .main .block-container {
+        max-width: 1280px;
+        padding-top: 1.2rem;
+        padding-bottom: 1rem;
+    }
+
+    .page-title {
+        font-size: 2.6rem;
+        font-weight: 800;
+        margin-bottom: 0.2rem;
+    }
+
+    .page-caption {
+        color: #a7adb8;
+        font-size: 1rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .form-card {
+        border: 1px solid #343946;
+        border-radius: 14px;
+        padding: 1.2rem;
+        background-color: #0f131b;
+    }
+
+    div[data-testid="stTextInput"] input,
+    div[data-testid="stNumberInput"] input {
+        border-radius: 12px !important;
+        min-height: 46px !important;
+    }
+
+    .stButton > button {
+        min-height: 42px !important;
+        border-radius: 12px !important;
+        font-weight: 600 !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 
 def main():
-    st.set_page_config(page_title="Editar salÃ³n", page_icon="âœï¸", layout="wide")
+    st.set_page_config(
+        page_title="Editar salón",
+        page_icon="✏️",
+        layout="wide"
+    )
+
     ensure_auth("ADMIN")
     render_sidebar_nav()
     render_topbar()
+    inject_styles()
 
     room_id = st.session_state.get("selected_room_id")
+
     if not room_id:
-        st.warning("No se ha seleccionado un salÃ³n.")
-        _safe_go_back()
+        st.warning("No se ha seleccionado un salón.")
+        if st.button("Volver"):
+            go_back()
+        return
 
-    # BotÃ³n volver
-    col1, col2 = st.columns([6, 1])
-    with col2:
-        if st.button("â† Volver"):
-            _safe_go_back()
+    top_left, top_right = st.columns([5, 1])
 
-    # Cargar datos actuales
+    with top_right:
+        if st.button("Volver", use_container_width=True,type="primary"):
+            go_back()
+
     try:
         room = api_get(f"/classrooms/{room_id}/")
     except Exception as e:
-        st.error(f"No se pudo cargar el salÃ³n: {e}")
-        _safe_go_back()
+        st.error(f"No se pudo cargar el salón: {e}")
         return
 
-    label = room.get('name') or f"{room.get('academic_year')} - {room.get('grade')}{room.get('section')}"
-    st.title(f"Editar: {label}")
-    st.caption("Modifica los campos y guarda los cambios.")
+    label = room.get("name") or f"{room.get('academic_year')} - {room.get('grade')}{room.get('section')}"
+
+    st.markdown(f'<div class="page-title">Editar: {label}</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="page-caption">Modifica los campos y guarda los cambios.</div>',
+        unsafe_allow_html=True
+    )
 
     with st.form("edit_room_form", clear_on_submit=False):
         c1, c2, c3 = st.columns(3)
+
         with c1:
             year = st.number_input(
-                "AÃ±o",
+                "Año",
                 min_value=2000,
                 max_value=2100,
-                value=int(room.get('academic_year') or date.today().year),
+                value=int(room.get("academic_year") or date.today().year),
                 step=1,
             )
+
         with c2:
-            grade = st.number_input("Grado", min_value=1, max_value=12, value=int(room.get('grade') or 1), step=1)
+            grade = st.number_input(
+                "Grado",
+                min_value=1,
+                max_value=12,
+                value=int(room.get("grade") or 1),
+                step=1
+            )
+
         with c3:
-            section = st.text_input("SecciÃ³n", value=room.get('section') or "", max_chars=2)
-        name = st.text_input("Nombre del salÃ³n", value=room.get('name') or "")
-        csave, ccancel = st.columns([1, 1])
-        save = csave.form_submit_button("Guardar cambios", type="primary")
-        cancel = ccancel.form_submit_button("Cancelar", type="secondary")
+            section = st.text_input(
+                "Sección",
+                value=room.get("section") or "",
+                max_chars=2
+            )
+
+        name = st.text_input(
+            "Nombre del salón",
+            value=room.get("name") or ""
+        )
+
+        c_cancel, c_save = st.columns([1, 1])
+
+        cancel = c_cancel.form_submit_button(
+            "Cancelar",
+            type="secondary",
+            use_container_width=True
+        )
+
+        save = c_save.form_submit_button(
+            "Guardar cambios",
+            type="primary",
+            use_container_width=True
+        )
 
     if cancel:
-        _safe_go_back()
+        go_back()
 
     if save:
+        if not section.strip():
+            st.error("La sección es obligatoria.")
+            return
+
+        if not name.strip():
+            st.error("El nombre del salón es obligatorio.")
+            return
+
         payload = {
             "academic_year": int(year),
             "grade": int(grade),
-            "section": section,
-            "name": name,
+            "section": section.strip().upper(),
+            "name": name.strip(),
         }
-        with st.spinner("Guardando..."):
+
+        with st.spinner("Guardando cambios..."):
             ok, data = api_patch(f"/classrooms/{room_id}/", payload)
-            if ok:
-                st.success("SalÃ³n actualizado correctamente")
-                _safe_go_back()
+
+        if ok:
+            st.session_state.pop("classrooms_cache", None)
+            st.success("Salón actualizado correctamente.")
+            go_back()
+        else:
+            if isinstance(data, dict):
+                for k, v in data.items():
+                    st.error(f"{k}: {v}")
             else:
-                if isinstance(data, dict):
-                    for k, v in data.items():
-                        st.error(f"{k}: {v}")
-                else:
-                    st.error(str(data))
+                st.error(str(data))
 
 
 if __name__ == "__main__":
     main()
-
-
