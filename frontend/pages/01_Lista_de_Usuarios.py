@@ -72,8 +72,9 @@ def inject_styles():
 
         .main .block-container {
             max-width: 1280px;
-            
         }
+
+
 
         .page-title {
             font-size: 3rem;
@@ -83,11 +84,6 @@ def inject_styles():
             margin-bottom: 0.35rem;
         }
 
-        .page-subtitle {
-            color: #94a3b8;
-            font-size: 1rem;
-            margin-bottom: 1.2rem;
-        }
 
         .section-title {
             font-size: 2rem;

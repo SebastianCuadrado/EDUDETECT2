@@ -86,6 +86,12 @@ def inject_styles():
         border-radius: 12px !important;
         font-weight: 600 !important;
     }
+    .back-wrap .stButton > button {
+    min-width: 120px;
+    min-height: 46px;
+    border-radius: 12px;
+    font-weight: 700;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -110,11 +116,15 @@ def main():
             go_back()
         return
 
-    top_left, top_right = st.columns([5, 1])
+    top_left, top_right = st.columns([6, 1])
+    with top_left:
+        st.title("Editar salón")
 
     with top_right:
-        if st.button("Volver", use_container_width=True,type="primary"):
+        st.markdown('<div class="back-wrap">', unsafe_allow_html=True)
+        if st.button("← Volver", type="primary", use_container_width=True):
             go_back()
+        st.markdown("</div>", unsafe_allow_html=True)
 
     try:
         room = api_get(f"/classrooms/{room_id}/")
@@ -124,11 +134,7 @@ def main():
 
     label = room.get("name") or f"{room.get('academic_year')} - {room.get('grade')}{room.get('section')}"
 
-    st.markdown(f'<div class="page-title">Editar: {label}</div>', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="page-caption">Modifica los campos y guarda los cambios.</div>',
-        unsafe_allow_html=True
-    )
+
 
     with st.form("edit_room_form", clear_on_submit=False):
         c1, c2, c3 = st.columns(3)

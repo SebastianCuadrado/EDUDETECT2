@@ -53,6 +53,17 @@ def go_back():
     else:
         st.rerun()
 
+st.markdown("""
+<style>
+
+.back-wrap .stButton > button {
+    min-width: 120px;
+    min-height: 46px;
+    border-radius: 12px;
+    font-weight: 700;
+}
+</style>
+""", unsafe_allow_html=True)
 
 def main():
     st.set_page_config(
@@ -79,14 +90,16 @@ def main():
         st.error(f"No se pudo cargar la información del alumno: {e}")
         return
 
-    col_title, col_back = st.columns([5, 1])
+    col_title, col_back = st.columns([6, 1])
 
     with col_title:
         st.title("Editar alumno")
 
     with col_back:
-        if st.button("Volver", type="primary"):
+        st.markdown('<div class="back-wrap">', unsafe_allow_html=True)
+        if st.button("← Volver", type="primary", use_container_width=True):
             go_back()
+        st.markdown("</div>", unsafe_allow_html=True)
 
     first_name_default = student.get("first_name", "")
     last_name_default = student.get("last_name", "")
