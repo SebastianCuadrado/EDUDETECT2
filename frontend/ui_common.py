@@ -214,30 +214,40 @@ def render_sidebar_nav():
             visibility: hidden !important;
         }
 
+        /* botón flotante superior del sidebar */
+        [data-testid="stSidebarHeader"] [data-testid="stSidebarCollapseButton"] {
+            display: none !important;
+        }
+
         /* Sidebar fondo */
         section[data-testid="stSidebar"] {
+            width: 280px !important;
+            min-width: 280px !important;
+            max-width: 280px !important;
             background: linear-gradient(180deg, #252733 0%, #222430 100%);
             border-right: 1px solid rgba(255,255,255,0.06);
         }
 
         /* Padding */
         section[data-testid="stSidebar"] > div {
+            width: 280px !important;
+            min-width: 280px !important;
+            max-width: 280px !important;
             padding-top: 1.2rem;
             padding-bottom: 1rem;
         }
 
         /* Header */
+        .sidebar-title,
+        .sidebar-user {
+            white-space: normal !important;
+            overflow-wrap: break-word !important;
+        }
         .sidebar-title {
             color: #f8fafc;
-            font-size: 1.9rem;
+            font-size: 1.55rem;
             font-weight: 800;
             margin-bottom: 0.2rem;
-        }
-
-        .sidebar-user {
-            color: #b8c0cc;
-            font-size: 0.95rem;
-            margin-bottom: 1rem;
         }
 
         .sidebar-divider {
@@ -248,18 +258,10 @@ def render_sidebar_nav():
 
         /* Links */
         section[data-testid="stSidebar"] .stPageLink a {
-            position: relative;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            padding: 0.75rem 0.9rem;
-            margin-bottom: 0.45rem;
-            border-radius: 12px;
-            color: #f8fafc !important;
-            text-decoration: none !important;
-            font-weight: 600;
+            width: 100% !important;
+            box-sizing: border-box !important;
             transition: all 0.18s ease;
+
         }
 
         /* Hover */
@@ -304,6 +306,38 @@ def render_sidebar_nav():
 
         .logout-wrap .stButton > button:hover {
             filter: brightness(1.03);
+        }
+
+        /* Barra superior completa */
+        header[data-testid="stHeader"] {
+            display: none !important;
+        }
+
+        /* Toolbar donde aparece Fork / GitHub */
+        [data-testid="stToolbar"],
+        .stAppToolbar,
+        div[class*="stAppToolbar"] {
+            display: none !important;
+        }
+
+        /* Badge inferior de Streamlit Cloud */
+        a[href="https://streamlit.io/cloud"],
+        a[class*="viewerBadge"],
+        div[class*="profileContainer"],
+        div[class*="profilePreview"] {
+            display: none !important;
+        }
+
+        /* Footer y widgets flotantes */
+        footer,
+        [data-testid="stStatusWidget"],
+        [data-testid="stDecoration"] {
+            display: none !important;
+        }
+
+        /* Quitar espacio superior que deja el header */
+        .main .block-container {
+            padding-top: 1rem !important;
         }
         </style>
         """,
