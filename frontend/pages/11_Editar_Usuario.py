@@ -157,6 +157,13 @@ def inject_styles():
             display: none !important;
             visibility: hidden !important;
         }
+        .back-wrap .stButton > button {
+            min-width: 90px;   
+            height: 40px;      
+            border-radius: 10px;
+            font-weight: 600;
+            padding: 0 12px;
+        }
         </style>
         """,
         unsafe_allow_html=True,
@@ -193,11 +200,15 @@ def main():
         st.session_state.edit_user_active = bool(user.get("is_active", True))
 
     col1, col2 = st.columns([6, 1])
+    with col1:
+        st.title(f"Editar: {user.get('username')}")
     with col2:
-        if st.button("Volver",type="primary"):
+        st.markdown('<div class="back-wrap">', unsafe_allow_html=True)
+        if st.button("← Volver", type="primary", use_container_width=True):
             go_back()
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    st.title(f"Editar: {user.get('username')}")
+    
 
     st.markdown('<div class="section-card">', unsafe_allow_html=True)
     st.markdown('<div class="section-title">Rol y estado</div>', unsafe_allow_html=True)
