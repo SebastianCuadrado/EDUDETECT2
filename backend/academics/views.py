@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import OuterRef, Exists
 from rest_framework import viewsets, permissions, filters
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -26,15 +27,20 @@ User = get_user_model()
 def scoped_students_qs(user):
     if getattr(user, "role", None) == "ADMIN" or getattr(user, "is_superuser", False):
         return Student.objects.all()
-    # Docente: alumnos con vínculo directo o pertenecientes a salones asignados
-    return (
-        Student.objects.filter(
-            enrollments__classroom__teacher_assignments__teacher=user,
-            enrollments__end_date__isnull=True,
-            enrollments__classroom__teacher_assignments__end_date__isnull=True,
-        )
-        .distinct()
+
+    # Subquery: enrollment activo (end_date IS NULL) cuyo salón tenga una
+    # asignación activa (end_date IS NULL) para este docente.
+    # Usar Exists + OuterRef garantiza que las tres condiciones aplican sobre
+    # la MISMA fila de Enrollment, evitando el cross-join que ocurre en
+    # PostgreSQL cuando se encadenan múltiples lookups a la misma relación
+    # dentro de un único .filter().
+    active_enrollment = Enrollment.objects.filter(
+        student=OuterRef("pk"),
+        end_date__isnull=True,
+        classroom__teacher_assignments__teacher=user,
+        classroom__teacher_assignments__end_date__isnull=True,
     )
+    return Student.objects.filter(Exists(active_enrollment))
 
 
 def scoped_classrooms_qs(user):
