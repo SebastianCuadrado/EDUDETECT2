@@ -15,6 +15,33 @@ st.set_page_config(page_title="EduDetect - Login", page_icon="🎓", layout="wid
 
 hydrate_auth_from_query()
 
+# ===================== LIMPIEZA DE SESIÓN =====================
+def clear_previous_user_state():
+    keys_to_clear = [
+        "auth",
+        "user",
+        "token",
+        "students_eval_cache",
+        "teacher_students_page",
+        "admin_students_page",
+        "admin_eval_students_page",
+        "evals_page",
+        "eval_mode",
+        "predicted",
+        "view_student_detail_id",
+        "student_grade_cache",
+        "current_user_id",
+        "selected_student",
+        "evals_cache",
+        "new_eval_mode",
+        "eval_student_select",
+    ]
+
+    for key in keys_to_clear:
+        st.session_state.pop(key, None)
+
+
+
 # ===================== ESTILOS =====================
 st.markdown("""
 <style>
@@ -136,6 +163,19 @@ if "auth" not in st.session_state:
 default_logo = Path(__file__).resolve().parent / "assets" / "logo.png"
 logo_path = default_logo if default_logo.exists() else None
 
+if st.session_state.get("auth"):
+    persist_auth_state()
+
+    if hasattr(st, "switch_page"):
+        role = (st.session_state.get("user") or {}).get("role")
+        target = (
+            "pages/01_Lista_de_Usuarios.py"
+            if role == "ADMIN"
+            else "pages/00_Panel_Principal.py"
+        )
+        st.switch_page(target)
+
+
 # ===================== LAYOUT =====================
 col1, col2 = st.columns([1, 1])
 
@@ -182,6 +222,7 @@ with col2:
 
                     if resp.status_code == 200:
                         data = resp.json()
+                        clear_previous_user_state()
                         st.session_state.auth = True
                         st.session_state.user = data.get("user", {})
                         st.session_state.token = data.get("token")
