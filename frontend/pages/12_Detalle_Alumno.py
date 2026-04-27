@@ -1,5 +1,4 @@
 import os
-
 import requests
 import streamlit as st
 
@@ -14,154 +13,508 @@ def auth_headers():
     return {"Authorization": f"Token {token}"} if token else {}
 
 
-def _safe_nav(target: str):
+def rerun():
+    if hasattr(st, "rerun"):
+        st.rerun()
+    else:
+        st.experimental_rerun()
+
+
+def safe_nav(target: str):
     try:
         if hasattr(st, "switch_page"):
             st.switch_page(target)
             return
     except Exception:
         pass
-    try:
-        st.experimental_rerun()
-    except Exception:
-        pass
+
+    rerun()
 
 
 def fetch_student(student_id: int):
     try:
-        r = requests.get(f"{API_URL}/students/{student_id}/", headers=auth_headers(), timeout=15)
-        r.raise_for_status()
-        return r.json()
-    except Exception as e:
+        response = requests.get(
+            f"{API_URL}/students/{student_id}/",
+            headers=auth_headers(),
+            timeout=15,
+        )
+        response.raise_for_status()
+        return response.json()
+
+    except requests.RequestException as e:
         st.error(f"No se pudo obtener la información del alumno: {e}")
         return None
 
 
 def fetch_enrollments(student_id: int):
     try:
-        r = requests.get(
+        response = requests.get(
             f"{API_URL}/enrollments/",
             headers=auth_headers(),
             params={"student": student_id},
             timeout=15,
         )
-        r.raise_for_status()
-        data = r.json()
+        response.raise_for_status()
+
+        data = response.json()
         return data.get("results", data)
-    except Exception as e:
-        st.warning(f"No se pudo obtener la matrícula: {e}")
+
+    except requests.RequestException:
         return []
 
 
 def fetch_classroom(classroom_id: int | None):
     if not classroom_id:
         return None
+
     try:
-        r = requests.get(f"{API_URL}/classrooms/{classroom_id}/", headers=auth_headers(), timeout=15)
-        r.raise_for_status()
-        return r.json()
-    except Exception:
-        return None
+        response = requests.get(
+            f"{API_URL}/classrooms/{classroom_id}/",
+            headers=auth_headers(),
+            timeout=15,
+        )
+        response.raise_for_status()
+        return response.json()
 
-
-def build_active_enrollment(student_id: int):
-    enrollments = fetch_enrollments(student_id)
-    if not enrollments:
+    except requests.RequestException:
         return None
-    active = next((e for e in enrollments if not e.get("end_date")), None)
-    if not active:
-        enrollments.sort(key=lambda x: x.get("start_date") or "", reverse=True)
-        active = enrollments[0]
-    active["classroom_detail"] = fetch_classroom(active.get("classroom"))
-    return active
 
 
 def fetch_evaluations(student_id: int):
     try:
-        r = requests.get(
+        response = requests.get(
             f"{API_URL}/evaluations/",
             headers=auth_headers(),
             params={"student": student_id},
             timeout=15,
         )
-        r.raise_for_status()
-        data = r.json()
+        response.raise_for_status()
+
+        data = response.json()
         return data.get("results", data)
-    except Exception as e:
+
+    except requests.RequestException as e:
         st.error(f"No se pudieron cargar las evaluaciones: {e}")
         return []
 
 
-def render_header(student, enrollment):
-    st.title(f"{student.get('first_name','')} {student.get('last_name','')}")
-    info_cols = st.columns(4)
-    info_cols[0].metric("Edad", student.get("age", "N/D"))
-    info_cols[1].metric("Género", student.get("gender", "-"))
-    if enrollment:
-        cls = enrollment.get("classroom_detail") or {}
-        classroom_label = cls.get("name") or ""
-        if not classroom_label:
-            grade = cls.get("grade")
-            section = cls.get("section")
-            parts = []
-            if grade not in (None, ""):
-                parts.append(f"{grade}°")
-            if section:
-                parts.append(section)
-            classroom_label = " ".join(parts).strip()
-        info_cols[2].metric("Salón", classroom_label or "No asignado")
-        info_cols[3].metric("Inicio", enrollment.get("start_date") or "-")
-    else:
-        info_cols[2].metric("Salón", "No asignado")
-        info_cols[3].metric("Inicio", "-")
+def build_active_enrollment(student_id: int):
+    enrollments = fetch_enrollments(student_id)
 
+    if not enrollments:
+        return None
 
-def render_evaluations(evals):
-    st.subheader("Historial de evaluaciones")
-    if not evals:
-        st.info("Este alumno aún no tiene evaluaciones registradas.")
-        return
-    rows = []
-    for ev in sorted(evals, key=lambda x: x.get("evaluated_at") or "", reverse=True):
-        rows.append(
-            {
-                "Fecha": ev.get("evaluated_at", "-"),
-                "Probabilidad": ev.get("probability", "N/D") or "N/D",
-                "Diagnóstico": ev.get("diagnosis", "-"),
-            }
+    active = next(
+        (enrollment for enrollment in enrollments if not enrollment.get("end_date")),
+        None,
+    )
+
+    if not active:
+        enrollments.sort(
+            key=lambda enrollment: enrollment.get("start_date") or "",
+            reverse=True,
         )
-    st.table(rows)
+        active = enrollments[0]
+
+    active["classroom_detail"] = fetch_classroom(active.get("classroom"))
+    return active
+
+
+def get_classroom_label(enrollment):
+    if not enrollment:
+        return "No asignado"
+
+    classroom = enrollment.get("classroom_detail") or {}
+
+    classroom_name = classroom.get("name")
+    if classroom_name:
+        return classroom_name
+
+    grade = classroom.get("grade")
+    section = classroom.get("section")
+
+    parts = []
+
+    if grade not in (None, ""):
+        parts.append(f"{grade}°")
+
+    if section:
+        parts.append(section)
+
+    return " ".join(parts).strip() or "No asignado"
+
+
+def get_start_date(enrollment):
+    if not enrollment:
+        return "-"
+
+    return enrollment.get("start_date") or "-"
+
+
+def get_last_evaluation_date(evaluations):
+    if not evaluations:
+        return " - "
+
+    ordered = sorted(
+        evaluations,
+        key=lambda evaluation: evaluation.get("evaluated_at") or "",
+        reverse=True,
+    )
+
+    return ordered[0].get("evaluated_at") or " - "
+
+
+def get_diagnosis_class(diagnosis):
+    diagnosis = str(diagnosis or "").lower()
+
+    if "alto" in diagnosis:
+        return "badge-high"
+
+    if "medio" in diagnosis:
+        return "badge-medium"
+
+    if "bajo" in diagnosis:
+        return "badge-low"
+
+    return "badge-neutral"
+
+
+def format_probability(value):
+    if value in (None, "", "N/D"):
+        return "N/D"
+
+    try:
+        value = float(value)
+
+        if value <= 1:
+            return f"{value:.2%}"
+
+        return f"{value:.2f}%"
+
+    except (TypeError, ValueError):
+        return value
+
+
+def render_styles():
+    st.markdown(
+        """
+        <style>
+            .block-container {
+                max-width: 1320px;
+                padding-top: 1.5rem;
+                padding-bottom: 2rem;
+            }
+
+            div[data-testid="stButton"] button {
+                border-radius: 10px;
+                font-weight: 600;
+                min-height: 42px;
+            }
+
+
+
+            .info-card {
+                border: 1px solid rgba(255, 255, 255, 0.14);
+                border-radius: 14px;
+                padding: 16px 18px;
+                background: rgba(255, 255, 255, 0.025);
+                min-height: 92px;
+            }
+
+            .info-label {
+                font-size: 13px;
+                font-weight: 700;
+                color: rgba(255, 255, 255, 0.55);
+                margin: 0 0 8px 0;
+            }
+
+            .info-value {
+                font-size: 24px;
+                font-weight: 800;
+                color: #ffffff;
+                margin: 0;
+            }
+
+            .last-evaluation-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 10px 18px;
+                border-radius: 999px;
+                border: 1px solid rgba(96, 165, 250, 0.65);
+                background: rgba(37, 99, 235, 0.18);
+                color: #93c5fd;
+                font-size: 15px;
+                font-weight: 700;
+                width: fit-content;
+                margin-top: 16px;
+            }
+
+            .last-evaluation-badge span {
+                color: #ffffff;
+                font-weight: 800;
+            }
+
+            .section-title {
+                font-size: 28px;
+                font-weight: 800;
+                color: #ffffff;
+                margin: 30px 0 18px 0;
+            }
+
+            .empty-box {
+                border: 1px solid rgba(96, 165, 250, 0.35);
+                border-radius: 14px;
+                padding: 24px 26px;
+                background: rgba(37, 99, 235, 0.14);
+                color: #93c5fd;
+                font-size: 16px;
+                font-weight: 600;
+            }
+
+            .eval-grid {
+                display: grid;
+                grid-template-columns: 1.2fr 1.2fr 1fr;
+                gap: 18px;
+                align-items: center;
+            }
+
+            .evaluation-card {
+                border: 1px solid rgba(255, 255, 255, 0.14);
+                border-radius: 14px;
+                padding: 18px 20px;
+                margin-bottom: 12px;
+                background: rgba(255, 255, 255, 0.025);
+            }
+
+            .eval-label {
+                font-size: 13px;
+                font-weight: 700;
+                color: rgba(255, 255, 255, 0.55);
+                margin: 0 0 6px 0;
+            }
+
+            .eval-value {
+                font-size: 17px;
+                font-weight: 800;
+                color: #ffffff;
+                margin: 0;
+            }
+
+            .badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 8px 16px;
+                border-radius: 999px;
+                font-size: 14px;
+                font-weight: 800;
+                width: fit-content;
+            }
+
+            .badge-high {
+                color: #fecaca;
+                border: 1px solid rgba(248, 113, 113, 0.55);
+                background: rgba(220, 38, 38, 0.16);
+            }
+
+            .badge-medium {
+                color: #fde68a;
+                border: 1px solid rgba(251, 191, 36, 0.55);
+                background: rgba(217, 119, 6, 0.16);
+            }
+
+            .badge-low {
+                color: #bbf7d0;
+                border: 1px solid rgba(74, 222, 128, 0.55);
+                background: rgba(22, 163, 74, 0.16);
+            }
+
+            .badge-neutral {
+                color: #cbd5e1;
+                border: 1px solid rgba(148, 163, 184, 0.45);
+                background: rgba(148, 163, 184, 0.12);
+            }
+
+            @media (max-width: 900px) {
+                .student-title {
+                    font-size: 60px;
+                }
+
+                .eval-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_header(student, enrollment, evaluations):
+    first_name = student.get("first_name", "")
+    last_name = student.get("last_name", "")
+    full_name = f"{first_name} {last_name}".strip()
+
+    classroom_label = get_classroom_label(enrollment)
+    last_evaluation = get_last_evaluation_date(evaluations)
+
+    st.title(f"{student.get('first_name','')} {student.get('last_name','')}")
+
+    col1, col2, col3, col4 = st.columns([1, 1, 1.4, 1])
+
+    with col1:
+        st.markdown(
+            f"""
+            <div class="info-card">
+                <p class="info-label">Edad</p>
+                <p class="info-value">{student.get("age", "N/D")}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with col2:
+        st.markdown(
+            f"""
+            <div class="info-card">
+                <p class="info-label">Género</p>
+                <p class="info-value">{student.get("gender", "-")}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with col3:
+        st.markdown(
+            f"""
+            <div class="info-card">
+                <p class="info-label">Salón</p>
+                <p class="info-value">{classroom_label}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+
+
+    with col4:
+        st.markdown(
+            f"""
+            <div class="info-card">
+                <p class="info-label">Evaluaciones</p>
+                <p class="info-value">{len(evaluations)}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown(
+        f"""
+        <div class="last-evaluation-badge">
+            Última evaluación: <span>{last_evaluation}</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_evaluations(evaluations):
+    st.markdown(
+        '<p class="section-title">Historial de evaluaciones</p>',
+        unsafe_allow_html=True,
+    )
+
+    if not evaluations:
+        st.markdown(
+            """
+            <div class="empty-box">
+                Este alumno aún no tiene evaluaciones registradas.
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        return
+
+    ordered_evaluations = sorted(
+        evaluations,
+        key=lambda evaluation: evaluation.get("evaluated_at") or "",
+        reverse=True,
+    )
+
+    for evaluation in ordered_evaluations:
+        evaluated_at = evaluation.get("evaluated_at") or "-"
+        probability = format_probability(evaluation.get("probability"))
+        diagnosis = evaluation.get("diagnosis") or "-"
+        badge_class = get_diagnosis_class(diagnosis)
+
+        st.markdown(
+            f"""
+            <div class="evaluation-card">
+                <div class="eval-grid">
+                    <div>
+                        <p class="eval-label">Fecha</p>
+                        <p class="eval-value">{evaluated_at}</p>
+                    </div>
+                    <div>
+                        <p class="eval-label">Probabilidad</p>
+                        <p class="eval-value">{probability}</p>
+                    </div>
+                    <div>
+                        <p class="eval-label">Diagnóstico</p>
+                        <span class="badge {badge_class}">{diagnosis}</span>
+                    </div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+
+def render_back_button():
+    if st.button("Volver al listado", type="secondary"):
+        safe_nav("pages/03_Historial_Alumnos_Evaluados.py")
 
 
 def main():
-    st.set_page_config(page_title="Detalle del alumno", page_icon="👤", layout="wide")
+    st.set_page_config(
+        page_title="Detalle del alumno",
+        page_icon="👤",
+        layout="wide",
+    )
+
     ensure_auth()
     render_sidebar_nav()
     render_topbar()
+    render_styles()
 
     student_id = st.session_state.get("view_student_detail_id")
+
     if not student_id:
         st.warning("Selecciona un alumno desde el listado para ver su detalle.")
-        if st.button("Volver al listado", type="secondary"):
-            _safe_nav("pages/03_Historial_Alumnos_Evaluados.py")
+        st.divider()
+        render_back_button()
         st.stop()
 
     student = fetch_student(student_id)
+
     if not student:
-        if st.button("Volver al listado", type="secondary"):
-            _safe_nav("pages/03_Historial_Alumnos_Evaluados.py")
+        st.divider()
+        render_back_button()
         st.stop()
 
     enrollment = build_active_enrollment(student_id)
     evaluations = fetch_evaluations(student_id)
 
-    render_header(student, enrollment)
-    st.markdown("---")
+    render_header(student, enrollment, evaluations)
+
+    st.divider()
+
     render_evaluations(evaluations)
 
-    st.markdown("---")
-    if st.button("Volver al listado", type="secondary"):
-        _safe_nav("pages/03_Historial_Alumnos_Evaluados.py")
+    st.divider()
+
+    render_back_button()
 
 
 if __name__ == "__main__":
