@@ -1,4 +1,6 @@
 import os
+from datetime import date, timedelta
+
 import requests
 import streamlit as st
 
@@ -13,8 +15,13 @@ def auth_headers():
     return {"Authorization": f"Token {token}"} if token else {}
 
 
-def api_get(path):
-    r = requests.get(f"{API_URL}{path}", headers=auth_headers(), timeout=20)
+def api_get(path, params=None):
+    r = requests.get(
+        f"{API_URL}{path}",
+        headers=auth_headers(),
+        params=params,
+        timeout=20,
+    )
     r.raise_for_status()
     data = r.json()
     return data.get("results", data)
@@ -24,7 +31,7 @@ def api_get_student(student_id):
     r = requests.get(
         f"{API_URL}/students/{student_id}/",
         headers=auth_headers(),
-        timeout=20
+        timeout=20,
     )
     r.raise_for_status()
     return r.json()
@@ -35,10 +42,10 @@ def api_patch_student(student_id, payload):
         f"{API_URL}/students/{student_id}/",
         headers=auth_headers() | {"Content-Type": "application/json"},
         json=payload,
-        timeout=20
+        timeout=20,
     )
 
-    if r.status_code in (200, 201):
+    if r.status_code in (200, 201, 202):
         return True, r.json()
 
     try:
@@ -47,34 +54,176 @@ def api_patch_student(student_id, payload):
         return False, {"detail": r.text}
 
 
+def api_get_classrooms():
+    return api_get("/classrooms/")
+
+
+def api_get_enrollments(student_id):
+    return api_get(
+        "/enrollments/",
+        params={"student": student_id},
+    )
+
+
+def api_patch_enrollment(enrollment_id, payload):
+    r = requests.patch(
+        f"{API_URL}/enrollments/{enrollment_id}/",
+        headers=auth_headers() | {"Content-Type": "application/json"},
+        json=payload,
+        timeout=20,
+    )
+
+    if r.status_code in (200, 201, 202):
+        return True, r.json()
+
+    try:
+        return False, r.json()
+    except Exception:
+        return False, {"detail": r.text}
+
+
+def api_post_enrollment(student_id, classroom_id, start_date_value):
+    payload = {
+        "student": student_id,
+        "classroom": classroom_id,
+        "start_date": start_date_value.isoformat(),
+        "end_date": None,
+    }
+
+    r = requests.post(
+        f"{API_URL}/enrollments/",
+        headers=auth_headers() | {"Content-Type": "application/json"},
+        json=payload,
+        timeout=20,
+    )
+
+    if r.status_code in (200, 201, 202):
+        return True, r.json()
+
+    try:
+        return False, r.json()
+    except Exception:
+        return False, {"detail": r.text}
+
+
+def get_active_enrollment(enrollments):
+    for enrollment in enrollments:
+        if not enrollment.get("end_date"):
+            return enrollment
+
+    return None
+
+
+def get_classroom_label(classroom):
+    if not classroom:
+        return "No asignado"
+
+    name = classroom.get("name")
+    academic_year = classroom.get("academic_year")
+    grade = classroom.get("grade")
+    section = classroom.get("section")
+
+    if name and grade and section:
+        return f"{name} - {grade}° {section}"
+
+    if name:
+        return name
+
+    parts = []
+
+    if academic_year:
+        parts.append(str(academic_year))
+
+    if grade not in (None, ""):
+        parts.append(f"{grade}°")
+
+    if section:
+        parts.append(str(section))
+
+    return " ".join(parts).strip() or f"Salón #{classroom.get('id')}"
+
+
+def get_classroom_by_id(classrooms, classroom_id):
+    if not classroom_id:
+        return None
+
+    for classroom in classrooms:
+        if str(classroom.get("id")) == str(classroom_id):
+            return classroom
+
+    return None
+
+
 def go_back():
     if hasattr(st, "switch_page"):
         st.switch_page("pages/08_Gestion_Alumnos.py")
     else:
         st.rerun()
 
-st.markdown("""
-<style>
 
-.back-wrap .stButton > button {
-    min-width: 120px;
-    min-height: 46px;
-    border-radius: 12px;
-    font-weight: 700;
-}
-</style>
-""", unsafe_allow_html=True)
+def clear_students_cache():
+    keys = [
+        "admin_students_cache",
+        "students_eval_cache",
+        "enrollment_cache",
+        "force_refresh_students",
+    ]
+
+    for key in keys:
+        st.session_state.pop(key, None)
+
+    st.session_state["force_refresh_students"] = True
+
+
+def render_styles():
+    st.markdown(
+        """
+        <style>
+            .back-wrap .stButton > button {
+                min-width: 120px;
+                min-height: 46px;
+                border-radius: 12px;
+                font-weight: 700;
+            }
+
+            .info-box {
+                border: 1px solid rgba(255, 255, 255, 0.14);
+                border-radius: 14px;
+                padding: 16px 18px;
+                background: rgba(255, 255, 255, 0.025);
+                margin-bottom: 16px;
+            }
+
+            .info-label {
+                font-size: 13px;
+                font-weight: 700;
+                color: rgba(255, 255, 255, 0.55);
+                margin: 0 0 6px 0;
+            }
+
+            .info-value {
+                font-size: 18px;
+                font-weight: 800;
+                color: #ffffff;
+                margin: 0;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
 
 def main():
     st.set_page_config(
         page_title="Editar alumno",
         page_icon="🎓",
-        layout="wide"
+        layout="wide",
     )
 
     ensure_auth("ADMIN")
     render_sidebar_nav()
     render_topbar()
+    render_styles()
 
     student_id = st.session_state.get("selected_student_id")
 
@@ -86,9 +235,16 @@ def main():
 
     try:
         student = api_get_student(student_id)
+        classrooms = api_get_classrooms()
+        enrollments = api_get_enrollments(student_id)
     except Exception as e:
         st.error(f"No se pudo cargar la información del alumno: {e}")
         return
+
+    active_enrollment = get_active_enrollment(enrollments)
+    active_classroom_id = active_enrollment.get("classroom") if active_enrollment else None
+    active_classroom = get_classroom_by_id(classrooms, active_classroom_id)
+    current_classroom_label = get_classroom_label(active_classroom)
 
     col_title, col_back = st.columns([6, 1])
 
@@ -109,6 +265,11 @@ def main():
     gender_options = ["", "M", "F"]
     gender_index = gender_options.index(gender_default) if gender_default in gender_options else 0
 
+    classroom_options = [
+        classroom for classroom in classrooms
+        if classroom.get("id") is not None
+    ]
+
     with st.form("edit_student_form", clear_on_submit=False):
         st.markdown("### Datos del alumno")
 
@@ -122,7 +283,7 @@ def main():
                 min_value=5,
                 max_value=18,
                 value=int(age_default),
-                step=1
+                step=1,
             )
 
         with c2:
@@ -133,8 +294,42 @@ def main():
                 format_func=lambda x: {
                     "": "Seleccione",
                     "M": "Masculino",
-                    "F": "Femenino"
-                }.get(x, x)
+                    "F": "Femenino",
+                }.get(x, x),
+            )
+
+        st.divider()
+
+        st.markdown("### Asignación de salón")
+
+        st.markdown(
+            f"""
+            <div class="info-box">
+                <p class="info-label">Salón actual</p>
+                <p class="info-value">{current_classroom_label}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        selected_classroom_id = None
+        start_date_value = None
+
+        classroom_select_options = [None] + classroom_options
+
+        selected_classroom = st.selectbox(
+            "Nuevo salón",
+            options=classroom_select_options,
+            format_func=lambda classroom: "Mantener salón actual"
+            if classroom is None
+            else get_classroom_label(classroom),
+        )
+
+        if selected_classroom is not None:
+            selected_classroom_id = selected_classroom.get("id")
+            start_date_value = st.date_input(
+                "Fecha de inicio en el nuevo salón",
+                value=date.today(),
             )
 
         c_cancel, c_save = st.columns([1, 1])
@@ -142,13 +337,13 @@ def main():
         cancel = c_cancel.form_submit_button(
             "Cancelar",
             type="secondary",
-            use_container_width=True
+            use_container_width=True,
         )
 
         save = c_save.form_submit_button(
             "Guardar cambios",
             type="primary",
-            use_container_width=True
+            use_container_width=True,
         )
 
     if cancel:
@@ -167,20 +362,47 @@ def main():
         }
 
         with st.spinner("Guardando cambios..."):
-            ok, data = api_patch_student(student_id, payload)
+            ok_student, student_response = api_patch_student(student_id, payload)
 
-        if not ok:
-            if isinstance(data, dict):
-                for k, v in data.items():
-                    st.error(f"{k}: {v}")
+        if not ok_student:
+            if isinstance(student_response, dict):
+                for key, value in student_response.items():
+                    st.error(f"{key}: {value}")
             else:
-                st.error(str(data))
+                st.error(str(student_response))
             return
 
-        st.session_state.pop("admin_students_cache", None)
-        st.session_state.pop("enrollment_cache", None)
-        st.session_state["force_refresh_students"] = True
+        if selected_classroom_id:
+            if active_classroom_id and str(selected_classroom_id) == str(active_classroom_id):
+                st.warning("Los datos del alumno fueron actualizados. El salón seleccionado es el mismo que el actual.")
+                clear_students_cache()
+                return
 
+            with st.spinner("Actualizando asignación de salón..."):
+                if active_enrollment:
+                    enrollment_id = active_enrollment.get("id")
+                    end_date_value = start_date_value - timedelta(days=1)
+
+                    ok_close, close_response = api_patch_enrollment(
+                        enrollment_id,
+                        {"end_date": end_date_value.isoformat()},
+                    )
+
+                    if not ok_close:
+                        st.error(f"No se pudo cerrar la asignación anterior: {close_response}")
+                        return
+
+                ok_enrollment, enrollment_response = api_post_enrollment(
+                    student_id,
+                    selected_classroom_id,
+                    start_date_value,
+                )
+
+                if not ok_enrollment:
+                    st.error(f"No se pudo crear la nueva asignación de salón: {enrollment_response}")
+                    return
+
+        clear_students_cache()
         st.success("Alumno actualizado correctamente.")
         go_back()
 
