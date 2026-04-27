@@ -227,6 +227,7 @@ def inject_styles():
             color: #cbd5e1;
             border: 1px solid rgba(255,255,255,0.10);
         }
+        
         </style>
         """,
         unsafe_allow_html=True,
@@ -405,7 +406,7 @@ def main():
 
         with st.container(border=True):
             name_col, age_col, gender_col, classroom_col, action_col = st.columns(
-                [2.8, 1.2, 1.4, 2.2, 1.8],
+                [2.5, 1.2, 1.4, 2.2, 1.8],
                 gap="medium",
                 vertical_alignment="center",
             )
@@ -447,6 +448,7 @@ def main():
                     )
 
             with action_col:
+                st.markdown('<div class="actions-center">', unsafe_allow_html=True)
                 b1, b2 = st.columns(2, gap="small")
 
                 if b1.button("Editar", key=f"stu_edit_{sid}", use_container_width=True):
@@ -463,6 +465,7 @@ def main():
                     st.session_state.confirm_delete_student_id = sid
                     st.session_state.confirm_delete_student_name = full_name
                     _safe_rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
 
         st.write("")
 
