@@ -41,6 +41,13 @@ def api_get_all(path, params=None):
 
     return out
 
+def get_active_enrollments(enrollments):
+    return [
+        enrollment
+        for enrollment in enrollments
+        if not enrollment.get("end_date")
+    ]
+
 
 def go_back():
     if hasattr(st, "switch_page"):
@@ -191,7 +198,9 @@ def main():
     try:
         room = api_get(f"/classrooms/{room_id}/")
         assigns = api_get_all("/teacher-assignments/", params={"classroom": room_id})
-        enrolls = api_get_all("/enrollments/", params={"classroom": room_id})
+
+        all_enrolls = api_get_all("/enrollments/", params={"classroom": room_id})
+        enrolls = get_active_enrollments(all_enrolls)
     except Exception as e:
         st.error(f"No se pudo cargar el detalle del salón: {e}")
         return
