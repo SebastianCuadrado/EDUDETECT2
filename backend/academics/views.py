@@ -29,7 +29,9 @@ def scoped_students_qs(user):
     # Docente: alumnos con vínculo directo o pertenecientes a salones asignados
     return (
         Student.objects.filter(
-            models.Q(enrollments__classroom__teacher_assignments__teacher=user)
+            enrollments__classroom__teacher_assignments__teacher=user,
+            enrollments__end_date__isnull=True,
+            enrollments__classroom__teacher_assignments__end_date__isnull=True,
         )
         .distinct()
     )
@@ -38,11 +40,14 @@ def scoped_students_qs(user):
 def scoped_classrooms_qs(user):
     if getattr(user, "role", None) == "ADMIN" or getattr(user, "is_superuser", False):
         return Classroom.objects.all()
-    return Classroom.objects.filter(
-        models.Q(teacher_assignments__teacher=user)
-        | models.Q(enrollments__student__teacher_links__teacher=user)
-    ).distinct()
 
+    return (
+        Classroom.objects.filter(
+            teacher_assignments__teacher=user,
+            teacher_assignments__end_date__isnull=True,
+        )
+        .distinct()
+    )
 
 def current_student_grade(student_id: int):
     enrollment = (
@@ -117,11 +122,22 @@ class StudentViewSet(viewsets.ModelViewSet):
         grade = self.request.query_params.get("grade")
         section = self.request.query_params.get("section")
         if year:
-            qs = qs.filter(enrollments__classroom__academic_year=year)
+            qs = qs.filter(
+                enrollments__classroom__academic_year=year,
+                enrollments__end_date__isnull=True,
+            )
+
         if grade:
-            qs = qs.filter(enrollments__classroom__grade=grade)
+            qs = qs.filter(
+                enrollments__classroom__grade=grade,
+                enrollments__end_date__isnull=True,
+        )
+
         if section:
-            qs = qs.filter(enrollments__classroom__section=section)
+            qs = qs.filter(
+                enrollments__classroom__section=section,
+                enrollments__end_date__isnull=True,
+        )
         return qs.order_by("-id").distinct()
 
     @action(detail=False, methods=["get"], url_path="evaluated")
@@ -140,11 +156,22 @@ class StudentViewSet(viewsets.ModelViewSet):
         grade = request.query_params.get("grade")
         section = request.query_params.get("section")
         if year:
-            qs = qs.filter(enrollments__classroom__academic_year=year)
+            qs = qs.filter(
+                enrollments__classroom__academic_year=year,
+                enrollments__end_date__isnull=True,
+            )
+
         if grade:
-            qs = qs.filter(enrollments__classroom__grade=grade)
+            qs = qs.filter(
+                enrollments__classroom__grade=grade,
+                enrollments__end_date__isnull=True,
+            )
+
         if section:
-            qs = qs.filter(enrollments__classroom__section=section)
+            qs = qs.filter(
+                enrollments__classroom__section=section,
+                enrollments__end_date__isnull=True,
+            )
 
         # Ordenar por última evaluación y evitar duplicados por JOIN
         # Usamos distinct() genérico para compatibilidad con SQLite/MySQL.
