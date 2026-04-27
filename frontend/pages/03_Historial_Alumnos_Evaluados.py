@@ -20,6 +20,36 @@ def rerun():
         st.experimental_rerun()
 
 
+def reset_state_if_user_changed():
+    user = st.session_state.get("user") or {}
+    user_id = user.get("id") or user.get("username")
+
+    if not user_id:
+        return
+
+    previous_user_id = st.session_state.get("current_user_id")
+
+    if previous_user_id != user_id:
+        keys_to_clear = [
+            "admin_students_cache",
+            "students_eval_cache",
+            "teacher_students_page",
+            "admin_students_page",
+            "last_stu_q",
+            "last_stu_y",
+            "last_stu_g",
+            "last_stu_s",
+            "view_student_detail_id",
+            "enrollment_cache",
+            "student_grade_cache",
+        ]
+
+        for key in keys_to_clear:
+            st.session_state.pop(key, None)
+
+        st.session_state["current_user_id"] = user_id
+
+
 def fetch_students(query=None, year=None, grade=None, section=None):
     params = {}
 
@@ -96,6 +126,7 @@ def render_styles():
                 color: #ffffff;
                 margin: 0;
             }
+
             .student-label {
                 display: inline-block;
                 padding: 6px 12px;
@@ -115,9 +146,11 @@ def render_styles():
                 margin: 0;
             }
 
-            .section-title {
-                margin-top: 22px;
-                margin-bottom: 12px;
+            .detail-button {
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+                height: 100%;
             }
         </style>
         """,
@@ -125,51 +158,13 @@ def render_styles():
     )
 
 
-def render_filters():
-    with st.form("student_filters"):
-        col1, col2, col3, col4 = st.columns([3.2, 1, 1, 1])
-
-        with col1:
-            query = st.text_input(
-                "Buscar alumno",
-                placeholder="Nombre, apellido",
-                label_visibility="visible",
-            )
-
-        with col2:
-            year = st.text_input(
-                "Año",
-                placeholder="Ej: 2024",
-            )
-
-        with col3:
-            grade = st.text_input(
-                "Grado",
-                placeholder="Ej: 3",
-            )
-
-        with col4:
-            section = st.text_input(
-                "Sección",
-                placeholder="Ej: A",
-                max_chars=2,
-            )
-
-        submitted = st.form_submit_button("Filtrar")
-
-    if submitted:
-        st.session_state["teacher_students_page"] = 1
-
-    return query, to_int(year), to_int(grade), section
-
-
 def get_last_evaluation_date(student):
     last_evaluation = student.get("last_evaluation") or {}
 
     if isinstance(last_evaluation, dict):
-        return last_evaluation.get("evaluated_at") or " -"
+        return last_evaluation.get("evaluated_at") or "-"
 
-    return " -"
+    return "-"
 
 
 def render_student_list(students):
@@ -191,15 +186,17 @@ def render_student_list(students):
         last_evaluation_date = get_last_evaluation_date(student)
 
         with st.container(border=True):
-            col1, col2, col3, col4 = st.columns([3, 1.5, 2, 1.2],
-            gap="medium",
-            vertical_alignment="center")
+            col1, col2, col3 = st.columns(
+                [3, 2, 1.2],
+                gap="medium",
+                vertical_alignment="center",
+            )
 
             with col1:
                 st.markdown(
                     f"""
                     <div style="display:flex; align-items:center; height:100%;">
-                        <div class="student-name" style="transform: translateY(-10px);">
+                        <div class="student-name">
                             {full_name}
                         </div>
                     </div>
@@ -213,16 +210,11 @@ def render_student_list(students):
                     unsafe_allow_html=True,
                 )
 
-            with col4:
+            with col3:
                 st.markdown("<div class='detail-button'>", unsafe_allow_html=True)
                 if st.button("Ver detalle", key=f"teacher_detail_{student_id}"):
                     go_to_student_detail(student_id)
                 st.markdown("</div>", unsafe_allow_html=True)
-def _to_int(val):
-    try:
-        return int(str(val).strip())
-    except Exception:
-        return None
 
 
 def main():
@@ -233,20 +225,24 @@ def main():
     )
 
     ensure_auth()
+    reset_state_if_user_changed()
     render_sidebar_nav()
     render_topbar()
     render_styles()
 
     st.title("Mis alumnos")
 
-    c1, c2, c3, c4, c5 = st.columns([3.8, 1.1, 1.1, 1.1, 1.2], gap="small")
+    c1, c2, c3, c4, c5 = st.columns(
+        [3.8, 1.1, 1.1, 1.1, 1.2],
+        gap="small",
+    )
 
     with c1:
         query = st.text_input(
             label="Buscar estudiante",
             placeholder="Buscar por nombre o apellido",
             label_visibility="collapsed",
-            value="",
+            value=st.session_state.get("last_stu_q", ""),
         )
 
     with c2:
@@ -254,7 +250,7 @@ def main():
             label="Año",
             placeholder="Año",
             label_visibility="collapsed",
-            value="",
+            value=st.session_state.get("last_stu_y", ""),
         )
 
     with c3:
@@ -262,7 +258,7 @@ def main():
             label="Grado",
             placeholder="Grado",
             label_visibility="collapsed",
-            value="",
+            value=st.session_state.get("last_stu_g", ""),
         )
 
     with c4:
@@ -271,37 +267,28 @@ def main():
             placeholder="Sección",
             label_visibility="collapsed",
             max_chars=2,
-            value="",
+            value=st.session_state.get("last_stu_s", ""),
         )
 
     with c5:
         do_filter = st.button("Filtrar", use_container_width=True)
 
-    last_q = st.session_state.get("last_stu_q", "")
-    last_y = st.session_state.get("last_stu_y", "")
-    last_g = st.session_state.get("last_stu_g", "")
-    last_s = st.session_state.get("last_stu_s", "")
-
-    auto_refresh = False
-    if query == "" and last_q != "": auto_refresh = True
-    if y_raw == "" and last_y != "": auto_refresh = True
-    if g_raw == "" and last_g != "": auto_refresh = True
-    if s == "" and last_s != "": auto_refresh = True
-
-    if do_filter or "admin_students_cache" not in st.session_state or auto_refresh:
+    if do_filter:
         st.session_state["last_stu_q"] = query
         st.session_state["last_stu_y"] = y_raw
         st.session_state["last_stu_g"] = g_raw
         st.session_state["last_stu_s"] = s
+        st.session_state["teacher_students_page"] = 1
 
-        year = _to_int(y_raw)
-        grade = _to_int(g_raw)
+    year = to_int(query and y_raw or y_raw)
+    grade = to_int(g_raw)
 
-        st.session_state.admin_students_cache = fetch_students(query, year, grade, s)
-        st.session_state["admin_students_page"] = 1
-        st.session_state.pop("enrollment_cache", None)
-
-    students = st.session_state.get("admin_students_cache", [])
+    students = fetch_students(
+        query=query,
+        year=year,
+        grade=grade,
+        section=s,
+    )
 
     render_student_list(students)
 

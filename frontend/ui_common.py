@@ -97,36 +97,55 @@ def clear_persisted_auth():
 
 def logout():
     clear_persisted_auth()
-    for key in ("auth", "username", "token", "user", "_auth_payload"):
-        if key in st.session_state:
-            del st.session_state[key]
+
+    keys_to_clear = [
+        "auth",
+        "username",
+        "token",
+        "user",
+        "_auth_payload",
+
+        # Datos temporales por usuario
+        "students_eval_cache",
+        "teacher_students_page",
+        "admin_students_page",
+        "admin_eval_students_page",
+        "evals_page",
+        "eval_mode",
+        "predicted",
+        "view_student_detail_id",
+        "student_grade_cache",
+        "current_user_id",
+        "selected_student",
+        "evals_cache",
+        "new_eval_mode",
+        "eval_student_select",
+    ]
+
+    for key in keys_to_clear:
+        st.session_state.pop(key, None)
+
     st.success("Sesión cerrada")
     time.sleep(0.2)
+
+    try:
+        if hasattr(st, "query_params"):
+            st.query_params.clear()
+    except Exception:
+        pass
+
     try:
         if hasattr(st, "switch_page"):
             st.switch_page("app_login.py")
             return
     except Exception:
         pass
+
     try:
         st.rerun()
     except Exception:
         if hasattr(st, "experimental_rerun"):
             st.experimental_rerun()
-
-    st.markdown("""
-    <style>
-    .pagination-wrap {
-        margin: 0.3rem 0 0.6rem 0; /* antes era más grande */
-        padding: 0;
-    }
-    .pagination-wrap .stButton > button {
-        min-height: 36px !important;
-        padding: 0.3rem 0.6rem !important;
-        font-size: 0.85rem !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
 
 def paginate_list(items, key: str, page_size: int = 10, label: str | None = None):
     total = len(items)
@@ -219,6 +238,17 @@ def render_sidebar_nav():
             width: 280px !important;
             background: linear-gradient(180deg, #252733 0%, #222430 100%);
             border-right: 1px solid rgba(255,255,255,0.06);
+        }
+
+        /* Pagination más compacta */
+        .pagination-wrap {
+            margin: 0.3rem 0 0.6rem 0; /* antes era más grande */
+            padding: 0;
+        }
+        .pagination-wrap .stButton > button {
+            min-height: 36px !important;
+            padding: 0.3rem 0.6rem !important;
+            font-size: 0.85rem !important;
         }
 
         /* Padding */
