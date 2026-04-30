@@ -36,10 +36,10 @@ class StudentSerializer(serializers.ModelSerializer):
         }
 
     def get_current_grade(self, obj):
-        # Tomar cualquier matrícula con salón; prioriza la más reciente por fecha (o id)
         enrollment = (
-            obj.enrollments.filter(classroom__isnull=False).order_by("-start_date", "-id").first()
-            or obj.enrollments.filter(classroom__isnull=False).order_by("-id").first()
+            obj.enrollments.filter(classroom__isnull=False, end_date__isnull=True)
+            .order_by("-start_date", "-id")
+            .first()
         )
         if enrollment and enrollment.classroom:
             return enrollment.classroom.grade

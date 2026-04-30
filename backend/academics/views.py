@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
-from django.db import models
+from django.db import models, transaction
 from django.db.models import OuterRef, Exists
+from django.utils import timezone
 from rest_framework import viewsets, permissions, filters
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -227,6 +228,43 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
         if student:
             qs = qs.filter(student_id=student)
         return qs.order_by("-id")
+
+    @action(detail=False, methods=["post"], url_path="transfer", permission_classes=[IsAdminOrScopedReadOnly])
+    def transfer(self, request):
+        student_id = request.data.get("student_id")
+        classroom_id = request.data.get("classroom_id")
+
+        if not student_id or not classroom_id:
+            return Response(
+                {"detail": "Se requieren student_id y classroom_id."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            student = Student.objects.get(id=student_id)
+        except Student.DoesNotExist:
+            return Response({"detail": "Alumno no encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+        if not scoped_students_qs(request.user).filter(id=student.id).exists():
+            return Response({"detail": "Sin permiso para este alumno."}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            classroom = Classroom.objects.get(id=classroom_id)
+        except Classroom.DoesNotExist:
+            return Response({"detail": "Salón no encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+        today = timezone.localdate()
+
+        with transaction.atomic():
+            Enrollment.objects.filter(student=student, end_date__isnull=True).update(end_date=today)
+            enrollment = Enrollment.objects.create(
+                student=student,
+                classroom=classroom,
+                start_date=today,
+                end_date=None,
+            )
+
+        return Response(EnrollmentSerializer(enrollment).data, status=status.HTTP_201_CREATED)
 
 
 class TeacherAssignmentViewSet(viewsets.ModelViewSet):

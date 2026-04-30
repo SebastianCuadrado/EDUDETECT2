@@ -47,6 +47,12 @@ def _decode_payload(raw: str):
 
 def hydrate_auth_from_query():
     if st.session_state.get("auth"):
+        # Ya hidratado — solo asegura que el ?auth no sea visible
+        try:
+            if "auth" in st.query_params:
+                st.query_params.clear()
+        except Exception:
+            pass
         return
     params = _get_query_params()
     raw = params.get("auth")
@@ -54,9 +60,6 @@ def hydrate_auth_from_query():
         raw = raw[0]
     if not raw:
         raw = st.session_state.get("_auth_payload")
-        if raw:
-            params["auth"] = raw
-            _set_query_params(params)
     if not raw:
         return
     data = _decode_payload(raw)
@@ -66,9 +69,19 @@ def hydrate_auth_from_query():
         if key in data:
             st.session_state[key] = data[key]
     st.session_state["_auth_payload"] = raw
+    # Limpia el ?auth del URL para que no sea visible ni quede en el historial
+    try:
+        if "auth" in st.query_params:
+            st.query_params.clear()
+    except Exception:
+        pass
 
 
 def persist_auth_state():
+    """Persiste el token en session_state._auth_payload (NO en el URL).
+    El URL se limpia en hydrate_auth_from_query al navegar.
+    Solo escribe en el URL si _auth_payload aún no existe para la navegación actual.
+    """
     if not st.session_state.get("auth"):
         return
     payload = {
@@ -80,10 +93,17 @@ def persist_auth_state():
     encoded = _encode_payload(payload)
     if not encoded:
         return
-    params = _get_query_params()
-    params["auth"] = encoded
-    _set_query_params(params)
     st.session_state["_auth_payload"] = encoded
+    # Escribe en el URL SOLO si aún no se ha hidratado esta sesión
+    # (es decir, es la primera vez que se navega a esta página)
+    try:
+        current_params = dict(st.query_params)
+        if "auth" not in current_params:
+            st.query_params["auth"] = encoded
+    except Exception:
+        params = _get_query_params()
+        params["auth"] = encoded
+        _set_query_params(params)
 
 
 def clear_persisted_auth():

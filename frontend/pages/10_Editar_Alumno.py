@@ -1,5 +1,4 @@
 import os
-from datetime import date, timedelta
 
 import requests
 import streamlit as st
@@ -65,41 +64,15 @@ def api_get_enrollments(student_id):
     )
 
 
-def api_patch_enrollment(enrollment_id, payload):
-    r = requests.patch(
-        f"{API_URL}/enrollments/{enrollment_id}/",
-        headers=auth_headers() | {"Content-Type": "application/json"},
-        json=payload,
-        timeout=20,
-    )
-
-    if r.status_code in (200, 201, 202):
-        return True, r.json()
-
-    try:
-        return False, r.json()
-    except Exception:
-        return False, {"detail": r.text}
-
-
-def api_post_enrollment(student_id, classroom_id, start_date_value):
-    payload = {
-        "student": student_id,
-        "classroom": classroom_id,
-        "start_date": start_date_value.isoformat(),
-        "end_date": None,
-    }
-
+def api_transfer_enrollment(student_id, classroom_id):
     r = requests.post(
-        f"{API_URL}/enrollments/",
+        f"{API_URL}/enrollments/transfer/",
         headers=auth_headers() | {"Content-Type": "application/json"},
-        json=payload,
+        json={"student_id": student_id, "classroom_id": classroom_id},
         timeout=20,
     )
-
     if r.status_code in (200, 201, 202):
         return True, r.json()
-
     try:
         return False, r.json()
     except Exception:
@@ -291,7 +264,6 @@ def main():
         )
 
         selected_classroom_id = None
-        start_date_value = None
 
         classroom_select_options = [None] + classroom_options
 
@@ -305,10 +277,6 @@ def main():
 
         if selected_classroom is not None:
             selected_classroom_id = selected_classroom.get("id")
-            start_date_value = st.date_input(
-                "Fecha de inicio en el nuevo salón",
-                value=date.today(),
-            )
 
         c_cancel, c_save = st.columns([1, 1])
 
@@ -357,27 +325,10 @@ def main():
                 return
 
             with st.spinner("Actualizando asignación de salón..."):
-                if active_enrollment:
-                    enrollment_id = active_enrollment.get("id")
-                    end_date_value = start_date_value - timedelta(days=1)
+                ok_transfer, transfer_response = api_transfer_enrollment(student_id, selected_classroom_id)
 
-                    ok_close, close_response = api_patch_enrollment(
-                        enrollment_id,
-                        {"end_date": end_date_value.isoformat()},
-                    )
-
-                    if not ok_close:
-                        st.error(f"No se pudo cerrar la asignación anterior: {close_response}")
-                        return
-
-                ok_enrollment, enrollment_response = api_post_enrollment(
-                    student_id,
-                    selected_classroom_id,
-                    start_date_value,
-                )
-
-                if not ok_enrollment:
-                    st.error(f"No se pudo crear la nueva asignación de salón: {enrollment_response}")
+                if not ok_transfer:
+                    st.error(f"No se pudo transferir al alumno: {transfer_response}")
                     return
 
         clear_students_cache()
