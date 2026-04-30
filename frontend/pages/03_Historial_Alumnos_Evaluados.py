@@ -108,25 +108,15 @@ def render_styles():
                 padding-top: 1.5rem;
                 padding-bottom: 2rem;
             }
-
             div[data-testid="stTextInput"] label {
                 font-weight: 600;
-                color: #ffffff;
+                color: var(--text-primary);
             }
-
             div[data-testid="stButton"] button {
                 border-radius: 10px;
                 font-weight: 600;
                 min-height: 42px;
             }
-
-            .student-name {
-                font-size: 17px;
-                font-weight: 700;
-                color: #ffffff;
-                margin: 0;
-            }
-
             .student-label {
                 display: inline-block;
                 padding: 6px 12px;
@@ -134,18 +124,16 @@ def render_styles():
                 font-size: 0.82rem;
                 font-weight: 700;
                 white-space: nowrap;
-                background: rgba(234, 138, 34, 0.16);
-                color: #fcb160;
-                border: 1px solid rgba(234, 138, 34, 0.32);
+                background: var(--student-meta-bg);
+                color: var(--student-meta-color);
+                border: 1px solid var(--student-meta-border);
             }
-
             .student-info {
                 font-size: 15px;
                 font-weight: 600;
-                color: rgba(255, 255, 255, 0.60);
+                color: var(--text-secondary);
                 margin: 0;
             }
-
             .detail-button {
                 display: flex;
                 justify-content: flex-end;

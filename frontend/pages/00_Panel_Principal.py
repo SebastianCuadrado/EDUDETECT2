@@ -77,101 +77,21 @@ def inject_styles():
             padding-top: 0.5rem !important;
             padding-bottom: 2rem !important;
         }
-
-        .page-title {
-            font-size: 3rem;
-            font-weight: 800;
-            color: #f8fafc;
-            line-height: 1.05;
-            margin-bottom: 0.35rem;
-        }
-
-        .page-subtitle {
-            color: #94a3b8;
-            font-size: 1rem;
-            margin-bottom: 1.2rem;
-        }
-
         .filter-card {
-            border: 1px solid rgba(255,255,255,0.08);
+            border: 1px solid var(--border-color);
             border-radius: 16px;
             padding: 16px 16px 6px 16px;
             margin-bottom: 18px;
-            background: rgba(255,255,255,0.015);
+            background: var(--bg-card);
         }
-
-        .kpi-card {
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 16px;
-            padding: 18px 18px 16px 18px;
-            background: rgba(255,255,255,0.015);
-            min-height: 110px;
-        }
-
-        .kpi-label {
-            color: #94a3b8;
-            font-size: 0.88rem;
-            font-weight: 700;
-            margin-bottom: 0.55rem;
-        }
-
-        .kpi-value {
-            color: #f8fafc;
-            font-size: 2rem;
-            font-weight: 800;
-            line-height: 1.05;
-        }
-
-        .kpi-helper {
-            color: #64748b;
-            font-size: 0.85rem;
-            margin-top: 0.35rem;
-        }
-
-        .summary-box {
-            border: 1px solid rgba(96,165,250,0.18);
-            background: rgba(30, 64, 175, 0.12);
-            color: #bfdbfe;
-            border-radius: 16px;
-            padding: 14px 16px;
-            margin: 18px 0;
-            font-size: 0.98rem;
-        }
-
-        .chart-card {
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 16px;
-            padding: 16px 16px 10px 16px;
-            background: rgba(255,255,255,0.015);
-            margin-bottom: 18px;
-        }
-
-        .chart-title {
-            color: #f8fafc;
-            font-size: 1.35rem;
-            font-weight: 800;
-            margin-bottom: 0.65rem;
-        }
-
-        .empty-box {
-            background: rgba(30, 64, 175, 0.18);
-            border: 1px solid rgba(96,165,250,0.18);
-            color: #bfdbfe;
-            border-radius: 16px;
-            padding: 18px;
-            margin-top: 1rem;
-        }
-
         div[data-testid="stSelectbox"] label,
         div[data-testid="stCheckbox"] label {
-            color: #e2e8f0 !important;
+            color: var(--text-primary) !important;
             font-weight: 700 !important;
         }
-
         div[data-testid="stSelectbox"] div {
             border-radius: 12px !important;
         }
-
         [data-testid="stMetric"] {
             background: transparent !important;
         }

@@ -225,59 +225,185 @@ def render_sidebar_nav():
     st.markdown(
         """
         <style>
+        /* =====================================================
+           VARIABLES DE TEMA — Dark por defecto, Light override
+           ===================================================== */
+        :root {
+            --bg-primary:        #0f172a;
+            --bg-secondary:      #1e293b;
+            --bg-sidebar:        linear-gradient(180deg, #252733 0%, #222430 100%);
+            --bg-card:           rgba(255,255,255,0.025);
+            --bg-input:          rgba(255,255,255,0.06);
+            --border-color:      rgba(255,255,255,0.08);
+            --border-sidebar:    rgba(255,255,255,0.06);
+            --border-divider:    rgba(255,255,255,0.10);
+
+            --text-primary:      #f8fafc;
+            --text-secondary:    #94a3b8;
+            --text-muted:        #64748b;
+            --text-sidebar-user: #b8c0cc;
+            --text-link:         #f8fafc;
+            --text-pagination:   #b8bcc8;
+            --text-input:        #f8fafc;
+
+            --badge-admin-bg:    rgba(59,130,246,0.16);
+            --badge-admin-color: #93c5fd;
+            --badge-admin-border:rgba(59,130,246,0.32);
+            --badge-doc-bg:      rgba(16,185,129,0.14);
+            --badge-doc-color:   #6ee7b7;
+            --badge-doc-border:  rgba(16,185,129,0.28);
+            --badge-pill-bg:     rgba(255,255,255,0.06);
+            --badge-pill-color:  #cbd5e1;
+            --badge-pill-border: rgba(255,255,255,0.10);
+            --badge-cls-bg:      rgba(59,130,246,0.16);
+            --badge-cls-color:   #93c5fd;
+            --badge-cls-border:  rgba(59,130,246,0.32);
+            --badge-gen-bg:      rgba(16,185,129,0.14);
+            --badge-gen-color:   #6ee7b7;
+            --badge-gen-border:  rgba(16,185,129,0.28);
+            --badge-none-bg:     rgba(255,255,255,0.06);
+            --badge-none-color:  #cbd5e1;
+            --badge-none-border: rgba(255,255,255,0.10);
+
+            --empty-box-bg:      rgba(30,64,175,0.18);
+            --empty-box-border:  rgba(96,165,250,0.18);
+            --empty-box-color:   #bfdbfe;
+
+            --hover-link-bg:     rgba(255,255,255,0.07);
+            --active-link-bg:    rgba(255,255,255,0.12);
+            --active-link-border:rgba(255,255,255,0.15);
+
+            --info-label-color:  rgba(255,255,255,0.55);
+            --info-value-color:  #ffffff;
+            --info-box-bg:       rgba(255,255,255,0.025);
+            --info-box-border:   rgba(255,255,255,0.14);
+
+            --kpi-label-color:   #94a3b8;
+            --kpi-value-color:   #f8fafc;
+            --kpi-helper-color:  #64748b;
+            --summary-bg:        rgba(30,64,175,0.12);
+            --summary-border:    rgba(96,165,250,0.18);
+            --summary-color:     #bfdbfe;
+            --chart-title-color: #f8fafc;
+
+            --student-name-color:#f8fafc;
+            --student-meta-bg:   rgba(234,138,34,0.16);
+            --student-meta-color:#fcb160;
+            --student-meta-border:rgba(234,138,34,0.32);
+
+            --user-name-color:   #f8fafc;
+            --user-user-color:   #cbd5e1;
+            --user-email-color:  #60a5fa;
+        }
+
+        /* =====================================================
+           OVERRIDES PARA TEMA CLARO
+           ===================================================== */
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-primary:        #f1f5f9;
+                --bg-secondary:      #e2e8f0;
+                --bg-sidebar:        linear-gradient(180deg, #1e2433 0%, #1a1f2e 100%);
+                --bg-card:           rgba(0,0,0,0.03);
+                --bg-input:          rgba(0,0,0,0.04);
+                --border-color:      rgba(0,0,0,0.10);
+
+                --text-primary:      #0f172a;
+                --text-secondary:    #475569;
+                --text-muted:        #64748b;
+                --text-sidebar-user: #b8c0cc;
+                --text-link:         #f8fafc;
+                --text-pagination:   #334155;
+                --text-input:        #0f172a;
+
+                --badge-admin-bg:    rgba(59,130,246,0.12);
+                --badge-admin-color: #1d4ed8;
+                --badge-admin-border:rgba(59,130,246,0.30);
+                --badge-doc-bg:      rgba(16,185,129,0.12);
+                --badge-doc-color:   #047857;
+                --badge-doc-border:  rgba(16,185,129,0.30);
+                --badge-pill-bg:     rgba(0,0,0,0.06);
+                --badge-pill-color:  #334155;
+                --badge-pill-border: rgba(0,0,0,0.12);
+                --badge-cls-bg:      rgba(59,130,246,0.12);
+                --badge-cls-color:   #1d4ed8;
+                --badge-cls-border:  rgba(59,130,246,0.30);
+                --badge-gen-bg:      rgba(16,185,129,0.12);
+                --badge-gen-color:   #047857;
+                --badge-gen-border:  rgba(16,185,129,0.30);
+                --badge-none-bg:     rgba(0,0,0,0.06);
+                --badge-none-color:  #475569;
+                --badge-none-border: rgba(0,0,0,0.12);
+
+                --empty-box-bg:      rgba(59,130,246,0.08);
+                --empty-box-border:  rgba(59,130,246,0.20);
+                --empty-box-color:   #1e40af;
+
+                --hover-link-bg:     rgba(255,255,255,0.07);
+                --active-link-bg:    rgba(255,255,255,0.15);
+                --active-link-border:rgba(255,255,255,0.20);
+
+                --info-label-color:  #64748b;
+                --info-value-color:  #0f172a;
+                --info-box-bg:       rgba(0,0,0,0.03);
+                --info-box-border:   rgba(0,0,0,0.10);
+
+                --kpi-label-color:   #475569;
+                --kpi-value-color:   #0f172a;
+                --kpi-helper-color:  #94a3b8;
+                --summary-bg:        rgba(59,130,246,0.07);
+                --summary-border:    rgba(59,130,246,0.20);
+                --summary-color:     #1e3a8a;
+                --chart-title-color: #0f172a;
+
+                --student-name-color:#0f172a;
+                --student-meta-bg:   rgba(234,138,34,0.10);
+                --student-meta-color:#92400e;
+                --student-meta-border:rgba(234,138,34,0.25);
+
+                --user-name-color:   #0f172a;
+                --user-user-color:   #334155;
+                --user-email-color:  #1d4ed8;
+            }
+        }
+
+        /* =====================================================
+           ESTILOS GLOBALES QUE USAN LAS VARIABLES
+           ===================================================== */
         [data-testid="stSidebarNav"] { display: none; }
 
-        /* Ocultar instrucciones de Input "Press enter..." globalmente */
         div[data-testid="InputInstructions"] {
             display: none !important;
             visibility: hidden !important;
         }
 
-        /* Sidebar fondo */
+        html, body, [class*="css"] {
+            font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        }
+
+        /* ===== SIDEBAR SIEMPRE OSCURO (independiente del tema) ===== */
         section[data-testid="stSidebar"] {
             width: 280px !important;
-            background: linear-gradient(180deg, #252733 0%, #222430 100%);
-            border-right: 1px solid rgba(255,255,255,0.06);
+            background: linear-gradient(180deg, #1e2433 0%, #1a1f2e 100%) !important;
+            border-right: 1px solid rgba(255,255,255,0.06) !important;
         }
 
-        /* Pagination más compacta */
-        .pagination-wrap {
-            margin: 0.3rem 0 0.6rem 0; /* antes era más grande */
-            padding: 0;
-        }
-        .pagination-wrap .stButton > button {
-            min-height: 36px !important;
-            padding: 0.3rem 0.6rem !important;
-            font-size: 0.85rem !important;
+        /* Fuerza fondo oscuro en todos los divs internos del sidebar */
+        section[data-testid="stSidebar"] > div,
+        section[data-testid="stSidebar"] > div > div {
+            background: transparent !important;
         }
 
-        /* Padding */
-        section[data-testid="stSidebar"] > div {
-            padding-top: 1.2rem;
-            padding-bottom: 1rem;
+        /* Links del sidebar — siempre blancos */
+        section[data-testid="stSidebar"] .stPageLink a,
+        section[data-testid="stSidebar"] .stPageLink a:visited,
+        section[data-testid="stSidebar"] .stPageLink a:hover,
+        section[data-testid="stSidebar"] .stPageLink a:active,
+        section[data-testid="stSidebar"] .stPageLink a * {
+            color: #f8fafc !important;
+            text-decoration: none !important;
         }
 
-        /* Header */
-        .sidebar-title {
-            color: #f8fafc;
-            font-size: 1.9rem;
-            font-weight: 800;
-            margin-bottom: 0.2rem;
-        }
-
-        .sidebar-user {
-            color: #b8c0cc;
-            font-size: 0.95rem;
-            margin-bottom: 1rem;
-        }
-
-        .sidebar-divider {
-            border: none;
-            border-top: 1px solid rgba(255,255,255,0.10);
-            margin: 0.8rem 0 1rem 0;
-        }
-
-        /* Links */
         section[data-testid="stSidebar"] .stPageLink a {
             position: relative;
             width: 100%;
@@ -287,25 +413,21 @@ def render_sidebar_nav():
             padding: 0.75rem 0.9rem;
             margin-bottom: 0.45rem;
             border-radius: 12px;
-            color: #f8fafc !important;
-            text-decoration: none !important;
             font-weight: 600;
             transition: all 0.18s ease;
+            background: transparent;
         }
 
-        /* Hover */
         section[data-testid="stSidebar"] .stPageLink a:hover:not([aria-current="page"]) {
-            background: rgba(255,255,255,0.07);
+            background: rgba(255,255,255,0.08) !important;
         }
 
-        /* 🔥 ACTIVO */
         section[data-testid="stSidebar"] .stPageLink a[aria-current="page"] {
-            background: rgba(255,255,255,0.12) !important;
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 12px;
+            background: rgba(255,255,255,0.14) !important;
+            border: 1px solid rgba(255,255,255,0.18) !important;
+            border-radius: 12px !important;
         }
 
-        /* 🔥 BARRA IZQUIERDA */
         section[data-testid="stSidebar"] .stPageLink a[aria-current="page"]::before {
             content: "";
             position: absolute;
@@ -317,7 +439,6 @@ def render_sidebar_nav():
             background: #4f8cff;
         }
 
-        /* Botón logout */
         .logout-wrap {
             margin-top: 1.2rem;
         }
@@ -330,29 +451,272 @@ def render_sidebar_nav():
             border: none;
             background: linear-gradient(180deg, #ff5a5f 0%, #ff4d4f 100%);
             color: white;
-            box-shadow: 0 10px 24px rgba(255, 77, 79, 0.18);
+            box-shadow: 0 10px 24px rgba(255,77,79,0.18);
         }
-
         .logout-wrap .stButton > button:hover {
             filter: brightness(1.03);
         }
 
-        /* Ocultar botón Deploy */
-[data-testid="stAppDeployButton"] {
-    display: none !important;
-}
+        /* Padding interno del sidebar */
+        section[data-testid="stSidebar"] > div {
+            padding-top: 1.2rem;
+            padding-bottom: 1rem;
+        }
 
-/* Ocultar menú de 3 puntos */
-#MainMenu {
-    visibility: hidden !important;
-}
+        /* Fuerza blanco en TODOS los textos del sidebar */
+        section[data-testid="stSidebar"] p,
+        section[data-testid="stSidebar"] span,
+        section[data-testid="stSidebar"] div,
+        section[data-testid="stSidebar"] label {
+            color: #f8fafc !important;
+        }
+        /* Excepto el email que va en azul */
+        section[data-testid="stSidebar"] .user-email {
+            color: #60a5fa !important;
+        }
+        section[data-testid="stSidebar"] .sidebar-user {
+            color: #b8c0cc !important;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
 
-/* Opcional: quitar espacio visual del toolbar */
-[data-testid="stToolbar"] {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-}
+        .sidebar-title {
+            color: #f8fafc !important;
+            font-size: 1.9rem;
+            font-weight: 800;
+            margin-bottom: 0.2rem;
+        }
+
+        .sidebar-divider {
+            border: none;
+            border-top: 1px solid rgba(255,255,255,0.10);
+            margin: 0.8rem 0 1rem 0;
+        }
+
+        /* Paginacion */
+        .pagination-wrap {
+            margin: 0.3rem 0 0.6rem 0;
+            padding: 0;
+        }
+        .pagination-wrap .stButton > button {
+            min-height: 36px !important;
+            padding: 0.3rem 0.6rem !important;
+            font-size: 0.85rem !important;
+        }
+        .pagination-info {
+            color: var(--text-pagination) !important;
+        }
+
+        /* ------- Títulos y textos de contenido ------- */
+        .page-title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1.05;
+            margin-bottom: 0.35rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 1.2rem;
+        }
+
+        /* ------- Badges comunes ------- */
+        .role-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            border: 1px solid transparent;
+        }
+        .role-admin {
+            background: var(--badge-admin-bg);
+            color: var(--badge-admin-color);
+            border-color: var(--badge-admin-border);
+        }
+        .role-docente {
+            background: var(--badge-doc-bg);
+            color: var(--badge-doc-color);
+            border-color: var(--badge-doc-border);
+        }
+        .salon-pill {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.80rem;
+            font-weight: 600;
+            background: var(--badge-pill-bg);
+            color: var(--badge-pill-color);
+            border: 1px solid var(--badge-pill-border);
+        }
+
+        /* student badges */
+        .classroom-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            white-space: nowrap;
+            background: var(--badge-cls-bg);
+            color: var(--badge-cls-color);
+            border: 1px solid var(--badge-cls-border);
+        }
+        .gender-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            white-space: nowrap;
+            background: var(--badge-gen-bg);
+            color: var(--badge-gen-color);
+            border: 1px solid var(--badge-gen-border);
+        }
+        .no-classroom-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            white-space: nowrap;
+            background: var(--badge-none-bg);
+            color: var(--badge-none-color);
+            border: 1px solid var(--badge-none-border);
+        }
+        .student-meta {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            white-space: nowrap;
+            background: var(--student-meta-bg);
+            color: var(--student-meta-color);
+            border: 1px solid var(--student-meta-border);
+        }
+
+        /* ------- Textos de usuario/alumno ------- */
+        .user-name, .student-name {
+            color: var(--user-name-color);
+            font-size: 1.45rem;
+            font-weight: 800;
+            line-height: 1.15;
+            margin: 0;
+        }
+        .student-name {
+            font-size: 1.35rem;
+        }
+        .user-username {
+            color: var(--user-user-color);
+            font-size: 0.98rem;
+            font-weight: 600;
+            line-height: 1.35;
+            margin: 0;
+        }
+        .user-email {
+            color: var(--user-email-color);
+            font-size: 0.98rem;
+            word-break: break-word;
+            margin-top: 0.22rem;
+        }
+
+        /* ------- Cajas vacías / info ------- */
+        .empty-box {
+            background: var(--empty-box-bg);
+            border: 1px solid var(--empty-box-border);
+            color: var(--empty-box-color);
+            border-radius: 16px;
+            padding: 18px;
+        }
+
+        /* ------- Info box (editar alumno) ------- */
+        .info-box {
+            border: 1px solid var(--info-box-border);
+            border-radius: 14px;
+            padding: 16px 18px;
+            background: var(--info-box-bg);
+            margin-bottom: 16px;
+        }
+        .info-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--info-label-color);
+            margin: 0 0 6px 0;
+        }
+        .info-value {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--info-value-color);
+            margin: 0;
+        }
+
+        /* ------- KPI cards (panel) ------- */
+        .kpi-card {
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 18px 18px 16px 18px;
+            background: var(--bg-card);
+            min-height: 110px;
+        }
+        .kpi-label {
+            color: var(--kpi-label-color);
+            font-size: 0.88rem;
+            font-weight: 700;
+            margin-bottom: 0.55rem;
+        }
+        .kpi-value {
+            color: var(--kpi-value-color);
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1.05;
+        }
+        .kpi-helper {
+            color: var(--kpi-helper-color);
+            font-size: 0.85rem;
+            margin-top: 0.35rem;
+        }
+        .summary-box {
+            border: 1px solid var(--summary-border);
+            background: var(--summary-bg);
+            color: var(--summary-color);
+            border-radius: 16px;
+            padding: 14px 16px;
+            margin: 18px 0;
+            font-size: 0.98rem;
+        }
+        .chart-card {
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px 16px 10px 16px;
+            background: var(--bg-card);
+            margin-bottom: 18px;
+        }
+        .chart-title {
+            color: var(--chart-title-color);
+            font-size: 1.35rem;
+            font-weight: 800;
+            margin-bottom: 0.65rem;
+        }
+
+        /* ------- Ocultar elementos de Streamlit ------- */
+        [data-testid="stAppDeployButton"] { display: none !important; }
+        #MainMenu { visibility: hidden !important; }
+        footer { visibility: hidden; }
+        [data-testid="stToolbar"] {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
         </style>
         """,
         unsafe_allow_html=True,

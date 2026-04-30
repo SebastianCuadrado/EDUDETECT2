@@ -48,13 +48,38 @@ st.markdown("""
 [data-testid="stSidebar"] {
     display: none !important;
 }
-
 [data-testid="stSidebarNav"] {
     display: none !important;
 }
-
 [data-testid="collapsedControl"] {
     display: none !important;
+}
+
+/* ===== VARIABLES DE TEMA (login) ===== */
+:root {
+    --login-bg-start:   #020617;
+    --login-bg-mid:     #031225;
+    --login-bg-end:     #071426;
+    --login-title:      #f8fafc;
+    --login-subtitle:   #94a3b8;
+    --login-footer:     #64748b;
+    --login-input-bg:   rgba(255,255,255,0.06);
+    --login-input-color:#ffffff;
+    --login-input-border:rgba(255,255,255,0.1);
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --login-bg-start:   #e0eaff;
+        --login-bg-mid:     #f0f4ff;
+        --login-bg-end:     #f8faff;
+        --login-title:      #0f172a;
+        --login-subtitle:   #475569;
+        --login-footer:     #64748b;
+        --login-input-bg:   rgba(0,0,0,0.04);
+        --login-input-color:#0f172a;
+        --login-input-border:rgba(0,0,0,0.12);
+    }
 }
 
 html, body, [class*="css"] {
@@ -65,7 +90,7 @@ html, body, [class*="css"] {
     background:
         radial-gradient(circle at top left, rgba(30, 64, 175, 0.18), transparent 30%),
         radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.12), transparent 28%),
-        linear-gradient(135deg, #020617 0%, #031225 45%, #071426 100%);
+        linear-gradient(135deg, var(--login-bg-start) 0%, var(--login-bg-mid) 45%, var(--login-bg-end) 100%);
 }
 
 .block-container {
@@ -75,61 +100,43 @@ html, body, [class*="css"] {
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 
-/* -------- IZQUIERDA -------- */
-
 .hero-box {
     padding: 2rem 1rem 2rem 0.5rem;
 }
 
-
 .hero-title {
-    color: #f8fafc;
+    color: var(--login-title);
     font-size: 2.5rem;
     font-weight: 800;
     margin-bottom: 1rem;
 }
 
 .hero-subtitle {
-    color: #94a3b8;
+    color: var(--login-subtitle);
     font-size: 1rem;
     margin-bottom: 1.5rem;
 }
 
-
-/* -------- LOGIN -------- */
-.login-card {
-    background: rgba(15, 23, 42, 0.85);
-    border-radius: 20px;
-    padding: 2rem;
-    margin-top: 3rem;
-    max-width: 450px;
-}
-
-/* 🔥 TÍTULO MÁS ABAJO */
 .login-title {
-    color: #f8fafc;
+    color: var(--login-title);
     font-size: 2rem;
     font-weight: 800;
     margin-top: 25px;
     margin-bottom: 0.5rem;
 }
 
-
-
-/* INPUTS */
 div[data-testid="InputInstructions"] {
     display: none !important;
     visibility: hidden !important;
 }
 
 div[data-testid="stTextInput"] input {
-    background: rgba(255,255,255,0.06) !important;
-    color: white !important;
+    background: var(--login-input-bg) !important;
+    color: var(--login-input-color) !important;
     border-radius: 12px !important;
-    border: 1px solid rgba(255,255,255,0.1) !important;
+    border: 1px solid var(--login-input-border) !important;
 }
 
-/* 🔥 BOTÓN MÁS SUAVE */
 .stButton > button,
 .stFormSubmitButton > button {
     background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%) !important;
@@ -140,7 +147,6 @@ div[data-testid="stTextInput"] input {
     box-shadow: 0 6px 16px rgba(59, 130, 246, 0.25);
 }
 
-/* HOVER */
 .stButton > button:hover,
 .stFormSubmitButton > button:hover {
     filter: brightness(1.05);
@@ -150,7 +156,7 @@ div[data-testid="stTextInput"] input {
 .login-footer {
     margin-top: 1rem;
     text-align: center;
-    color: #64748b;
+    color: var(--login-footer);
 }
 </style>
 """, unsafe_allow_html=True)

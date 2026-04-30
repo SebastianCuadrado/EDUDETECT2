@@ -81,7 +81,7 @@ def paginate_items(items, key: str, page_size: int = 8):
         with c2:
             st.markdown(
                 f"""
-                <div style="text-align:center; padding-top:0.5rem; color:#a7adb8;">
+                <div style="text-align:center; padding-top:0.5rem; color:var(--text-pagination)">
                     Página <b>{page}</b> de <b>{total_pages}</b> · {start + 1}-{end} de {total}
                 </div>
                 """,
@@ -104,62 +104,49 @@ def inject_styles():
         padding-top: 1.2rem;
         padding-bottom: 1rem;
     }
-
     .room-title {
         font-size: 2.7rem;
         font-weight: 800;
+        color: var(--text-primary);
         margin-bottom: 0.2rem;
     }
-
     .room-meta {
-        color: #a7adb8;
+        color: var(--text-secondary);
         font-size: 1rem;
         margin-bottom: 1rem;
     }
-
     .metric-card {
-        border: 1px solid #343946;
+        border: 1px solid var(--border-color);
         border-radius: 14px;
         padding: 1rem 1.2rem;
-        background-color: #0f131b;
+        background: var(--bg-card);
     }
-
     .metric-value {
         font-size: 1.8rem;
         font-weight: 800;
+        color: var(--text-primary);
     }
-
     .metric-label {
-        color: #a7adb8;
+        color: var(--text-secondary);
         font-size: 0.9rem;
     }
-
-    .section-title {
-        font-size: 1.6rem;
-        font-weight: 800;
-        margin-top: 1rem;
-        margin-bottom: 0.6rem;
-    }
-
     .item-card {
-        border: 1px solid #343946;
+        border: 1px solid var(--border-color);
         border-radius: 14px;
         padding: 0.9rem 1rem;
         margin-bottom: 0.65rem;
-        background-color: #0f131b;
+        background: var(--bg-card);
     }
-
     .item-title {
         font-size: 1rem;
         font-weight: 700;
+        color: var(--text-primary);
     }
-
     .item-subtitle {
-        color: #a7adb8;
+        color: var(--text-secondary);
         font-size: 0.9rem;
         margin-top: 0.2rem;
     }
-
     .stButton > button {
         min-height: 42px !important;
         border-radius: 12px !important;

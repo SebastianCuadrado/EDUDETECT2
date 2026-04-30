@@ -103,34 +103,15 @@ def inject_styles():
             padding-top: 1.5rem;
             padding-bottom: 1rem;
         }
-
-        .page-title {
-            font-size: 2.6rem;
-            font-weight: 800;
-            color: #f8fafc;
-            line-height: 1.05;
-            margin-bottom: 0.9rem;
-        }
-
-        .section-title {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #f8fafc;
-            margin-top: 0.9rem;
-            margin-bottom: 0.4rem;
-        }
-
         div[data-testid="stTextInput"] input {
             border-radius: 14px !important;
             min-height: 48px !important;
         }
-
         .stButton > button {
             border-radius: 12px !important;
             min-height: 44px !important;
             font-weight: 600 !important;
         }
-
         .new-room-wrap .stButton > button {
             min-height: 46px !important;
             font-size: 1rem !important;

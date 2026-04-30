@@ -113,121 +113,37 @@ def inject_styles():
         <style>
         .main .block-container {
             max-width: 1280px;
-
-            
-        }
-
-        .page-title {
-            font-size: 3rem;
-            font-weight: 800;
-            color: #f8fafc;
-            line-height: 1.05;
-            margin-bottom: 0.35rem;
-        }
-
-        .page-subtitle {
-            color: #94a3b8;
-            font-size: 1rem;
-            margin-bottom: 1.2rem;
-        }
-
-        .section-title {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #f8fafc;
-            margin-bottom: 1rem;
         }
 
         div[data-testid="stTextInput"] {
             margin-top: 0 !important;
         }
-
         div[data-testid="stTextInput"] input {
             border-radius: 14px !important;
             min-height: 48px !important;
             padding-top: 6px !important;
             padding-bottom: 12px !important;
         }
-
         .stButton > button {
             border-radius: 12px !important;
             min-height: 44px !important;
             font-weight: 600 !important;
         }
-
         .new-student-wrap .stButton > button {
             min-height: 46px !important;
             font-size: 1rem !important;
         }
-
         .filter-btn-wrap {
             padding-top: 3px;
             margin-bottom: 5px;
         }
-
         .filter-btn-wrap .stButton > button {
             min-height: 48px !important;
             margin-top: 0 !important;
         }
-
-        .empty-box {
-            background: rgba(30, 64, 175, 0.18);
-            border: 1px solid rgba(96,165,250,0.18);
-            color: #bfdbfe;
-            border-radius: 16px;
-            padding: 18px;
+        .actions-center {
+            margin-top: 0.22rem;
         }
-
-        .student-name {
-            color: #f8fafc;
-            font-size: 1.35rem;
-            font-weight: 800;
-            line-height: 1.1;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-
-        .student-meta {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 999px;
-            font-size: 0.82rem;
-            font-weight: 700;
-            white-space: nowrap;
-            background: rgba(234, 138, 34, 0.16);
-            color: #fcb160;
-            border: 1px solid rgba(234, 138, 34, 0.32);
-        }
-
-        .classroom-badge,
-        .gender-badge,
-        .no-classroom-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 999px;
-            font-size: 0.82rem;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .classroom-badge {
-            background: rgba(59, 130, 246, 0.16);
-            color: #93c5fd;
-            border: 1px solid rgba(59, 130, 246, 0.32);
-        }
-
-        .gender-badge {
-            background: rgba(16, 185, 129, 0.14);
-            color: #6ee7b7;
-            border: 1px solid rgba(16, 185, 129, 0.28);
-        }
-
-        .no-classroom-badge {
-            background: rgba(255,255,255,0.06);
-            color: #cbd5e1;
-            border: 1px solid rgba(255,255,255,0.10);
-        }
-        
         </style>
         """,
         unsafe_allow_html=True,
