@@ -69,94 +69,37 @@ def inject_styles():
     st.markdown(
         """
         <style>
-
         .main .block-container {
             max-width: 1280px;
-        }
-
-
-
-        .page-title {
-            font-size: 3rem;
-            font-weight: 800;
-            color: #f8fafc;
-            line-height: 1.05;
-            margin-bottom: 0.35rem;
-        }
-
-
-        .section-title {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #f8fafc;
-            margin-bottom: 1rem;
         }
 
         div[data-testid="stTextInput"] {
             margin-top: 0 !important;
         }
-
         div[data-testid="stTextInput"] input {
             border-radius: 14px !important;
             height: 40px !important;
         }
-
         div[data-testid="column"] {
             display: flex;
             align-items: end;
         }
-
         .stButton > button {
             border-radius: 12px !important;
             min-height: 44px !important;
             font-weight: 600 !important;
         }
-
         .new-user-wrap .stButton > button {
             min-height: 46px !important;
             font-size: 1rem !important;
         }
-
         input {
             height: 40px !important;
             border-radius: 10px !important;
         }
-
-        .empty-box {
-            background: rgba(30, 64, 175, 0.18);
-            border: 1px solid rgba(96,165,250,0.18);
-            color: #bfdbfe;
-            border-radius: 16px;
-            padding: 18px;
-        }
-
         .mid-wrap {
             margin-top: 0.22rem;
         }
-
-        .user-name {
-            color: #f8fafc;
-            font-size: 1.45rem;
-            font-weight: 800;
-            line-height: 1.15;
-            margin: 0;
-        }
-
-        .user-username {
-            color: #cbd5e1;
-            font-size: 0.98rem;
-            font-weight: 600;
-            line-height: 1.35;
-            margin: 0;
-        }
-
-        .user-email {
-            color: #60a5fa;
-            font-size: 0.98rem;
-            word-break: break-word;
-            margin-top: 0.22rem;
-        }
-
         .meta-wrap {
             display: flex;
             align-items: center;
@@ -164,39 +107,6 @@ def inject_styles():
             flex-wrap: wrap;
             margin-top: 0.15rem;
         }
-
-        .role-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 999px;
-            font-size: 0.82rem;
-            font-weight: 700;
-            border: 1px solid transparent;
-        }
-
-        .role-admin {
-            background: rgba(59, 130, 246, 0.16);
-            color: #93c5fd;
-            border-color: rgba(59, 130, 246, 0.32);
-        }
-
-        .role-docente {
-            background: rgba(16, 185, 129, 0.14);
-            color: #6ee7b7;
-            border-color: rgba(16, 185, 129, 0.28);
-        }
-
-        .salon-pill {
-            display: inline-block;
-            padding: 6px 10px;
-            border-radius: 999px;
-            font-size: 0.80rem;
-            font-weight: 600;
-            background: rgba(255,255,255,0.06);
-            color: #cbd5e1;
-            border: 1px solid rgba(255,255,255,0.10);
-        }
-
         .actions-center {
             margin-top: 0.22rem;
         }

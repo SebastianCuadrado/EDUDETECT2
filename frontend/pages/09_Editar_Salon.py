@@ -1,4 +1,4 @@
-﻿import os
+import os
 from datetime import date
 
 import requests
@@ -55,42 +55,32 @@ def inject_styles():
         padding-top: 1.2rem;
         padding-bottom: 1rem;
     }
-
-    .page-title {
-        font-size: 2.6rem;
-        font-weight: 800;
-        margin-bottom: 0.2rem;
-    }
-
     .page-caption {
-        color: #a7adb8;
+        color: var(--text-secondary);
         font-size: 1rem;
         margin-bottom: 1.2rem;
     }
-
     .form-card {
-        border: 1px solid #343946;
+        border: 1px solid var(--border-color);
         border-radius: 14px;
         padding: 1.2rem;
-        background-color: #0f131b;
+        background: var(--bg-card);
     }
-
     div[data-testid="stTextInput"] input,
     div[data-testid="stNumberInput"] input {
         border-radius: 12px !important;
         min-height: 46px !important;
     }
-
     .stButton > button {
         min-height: 42px !important;
         border-radius: 12px !important;
         font-weight: 600 !important;
     }
     .back-wrap .stButton > button {
-    min-width: 120px;
-    min-height: 46px;
-    border-radius: 12px;
-    font-weight: 700;
+        min-width: 120px;
+        min-height: 46px;
+        border-radius: 12px;
+        font-weight: 700;
     }
     </style>
     """, unsafe_allow_html=True)

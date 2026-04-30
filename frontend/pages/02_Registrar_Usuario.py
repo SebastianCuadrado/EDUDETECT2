@@ -84,85 +84,66 @@ def inject_styles():
             padding-top: 1.8rem;
             padding-bottom: 2rem;
         }
-
         .section-card {
-            border: 1px solid rgba(255,255,255,0.08);
+            border: 1px solid var(--border-color);
             border-radius: 16px;
             padding: 16px 16px 8px 16px;
             margin-bottom: 18px;
-            background: rgba(255,255,255,0.01);
+            background: var(--bg-card);
         }
-
-        .section-title {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: #f8fafc;
-            margin: 0 0 0.75rem 0;
-        }
-
         .section-subtitle {
-            color: #94a3b8;
+            color: var(--text-secondary);
             font-size: 0.96rem;
             margin-bottom: 0.9rem;
         }
-
         .mini-title {
-            color: #f8fafc;
+            color: var(--text-primary);
             font-size: 1.15rem;
             font-weight: 700;
             margin: 0.3rem 0 0.7rem 0;
         }
-
         .pending-card {
-            border: 1px solid rgba(255,255,255,0.08);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 10px 12px;
             margin-bottom: 8px;
-            background: rgba(255,255,255,0.015);
+            background: var(--bg-card);
         }
-
         .pending-text {
-            color: #e2e8f0;
+            color: var(--text-primary);
             font-size: 0.95rem;
             margin: 0;
         }
-
         .admin-note {
-            color: #cbd5e1;
+            color: var(--text-secondary);
             font-size: 0.96rem;
             margin-bottom: 0.8rem;
         }
-
         .footer-actions {
             margin-top: 0.8rem;
         }
-
         .footer-actions .stButton > button,
         .footer-actions .stFormSubmitButton > button {
             min-height: 46px !important;
             border-radius: 12px !important;
             font-weight: 700 !important;
         }
-
         .assign-btn-wrap .stFormSubmitButton > button {
             min-height: 46px !important;
             border-radius: 12px !important;
             font-weight: 700 !important;
             background-color: #FF9800 !important;
-            
         }
-
         div[data-testid="stCheckbox"] {
             margin-top: 1.9rem;
         }
-
         div[data-testid="InputInstructions"] {
             display: none !important;
             visibility: hidden !important;
         }
         .back-wrap .stButton > button {
-            min-width: 90px;   
-            height: 40px;      
+            min-width: 90px;
+            height: 40px;
             border-radius: 10px;
             font-weight: 600;
             padding: 0 12px;

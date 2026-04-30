@@ -76,65 +76,50 @@ def render_styles():
                 padding-top: 1.5rem;
                 padding-bottom: 2rem;
             }
-
             div[data-testid="stButton"] button,
             div[data-testid="stDownloadButton"] button {
                 border-radius: 10px;
                 font-weight: 700;
                 min-height: 42px;
             }
-
-            .page-subtitle {
-                font-size: 15px;
-                font-weight: 600;
-                color: rgba(255, 255, 255, 0.58);
-                margin-bottom: 26px;
-            }
-
             .summary-card {
-                border: 1px solid rgba(255, 255, 255, 0.14);
+                border: 1px solid var(--info-box-border);
                 border-radius: 14px;
                 padding: 14px 18px;
-                background: rgba(255, 255, 255, 0.025);
+                background: var(--info-box-bg);
                 min-height: 78px;
             }
-
             .summary-label {
                 font-size: 13px;
                 font-weight: 700;
-                color: rgba(255, 255, 255, 0.55);
+                color: var(--info-label-color);
                 margin: 0 0 8px 0;
             }
-
             .summary-value {
                 font-size: 24px;
                 font-weight: 800;
-                color: #ffffff;
+                color: var(--info-value-color);
                 margin: 0;
             }
-
             .evaluation-card {
-                border: 1px solid rgba(255, 255, 255, 0.14);
+                border: 1px solid var(--info-box-border);
                 border-radius: 14px;
                 padding: 18px 20px;
                 margin-bottom: 14px;
-                background: rgba(255, 255, 255, 0.025);
+                background: var(--info-box-bg);
             }
-
             .eval-label {
                 font-size: 13px;
                 font-weight: 700;
-                color: rgba(255, 255, 255, 0.55);
+                color: var(--info-label-color);
                 margin: 0 0 0px 0;
             }
-
             .eval-value {
                 font-size: 16px;
                 font-weight: 800;
-                color: #ffffff;
+                color: var(--info-value-color);
                 margin: 0;
             }
-
             .badge {
                 display: inline-flex;
                 align-items: center;
@@ -145,76 +130,47 @@ def render_styles():
                 font-weight: 800;
                 width: fit-content;
             }
-
-            .badge-high {
-                color: #fecaca;
-
-            }
-
-            .badge-medium {
-                color: #fde68a;
-
-            }
-
-            .badge-low {
-                color: #bbf7d0;
-
-            }
-
-            .badge-neutral {
-                color: #cbd5e1;
-
-            }
-
+            .badge-high  { color: #fecaca; }
+            .badge-medium { color: #fde68a; }
+            .badge-low   { color: #bbf7d0; }
+            .badge-neutral { color: var(--badge-none-color); }
             .scale-box {
-                border: 1px solid rgba(96, 165, 250, 0.35);
+                border: 1px solid var(--summary-border);
                 border-radius: 14px;
                 padding: 16px 18px;
-                background: rgba(37, 99, 235, 0.12);
-                color: #93c5fd;
+                background: var(--summary-bg);
+                color: var(--summary-color);
                 font-size: 14px;
                 font-weight: 700;
                 margin-bottom: 24px;
             }
-
-            .section-title {
-                font-size: 22px;
-                font-weight: 800;
-                color: #ffffff;
-                margin: 10px 0 8px 0;
-            }
-
             .question-row {
-                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                border-bottom: 1px solid var(--border-color);
                 padding: 6px 0 4px 0;
             }
-
             .question-text {
                 font-size: 15px;
                 font-weight: 650;
-                color: #ffffff;
+                color: var(--text-primary);
                 margin: 0;
             }
-
             .result-box {
-                border: 1px solid rgba(96, 165, 250, 0.45);
+                border: 1px solid var(--summary-border);
                 border-radius: 14px;
                 padding: 18px 20px;
-                background: rgba(37, 99, 235, 0.14);
+                background: var(--summary-bg);
                 margin-top: 20px;
             }
-
             .result-title {
                 font-size: 18px;
                 font-weight: 800;
-                color: #ffffff;
+                color: var(--info-value-color);
                 margin: 0 0 8px 0;
             }
-
             .result-text {
                 font-size: 15px;
                 font-weight: 700;
-                color: #93c5fd;
+                color: var(--summary-color);
                 margin: 0;
             }
             div[data-testid="stDownloadButton"] button {

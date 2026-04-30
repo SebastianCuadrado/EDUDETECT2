@@ -185,28 +185,6 @@ def render_styles():
                 border-radius: 12px;
                 font-weight: 700;
             }
-
-            .info-box {
-                border: 1px solid rgba(255, 255, 255, 0.14);
-                border-radius: 14px;
-                padding: 16px 18px;
-                background: rgba(255, 255, 255, 0.025);
-                margin-bottom: 16px;
-            }
-
-            .info-label {
-                font-size: 13px;
-                font-weight: 700;
-                color: rgba(255, 255, 255, 0.55);
-                margin: 0 0 6px 0;
-            }
-
-            .info-value {
-                font-size: 18px;
-                font-weight: 800;
-                color: #ffffff;
-                margin: 0;
-            }
         </style>
         """,
         unsafe_allow_html=True,

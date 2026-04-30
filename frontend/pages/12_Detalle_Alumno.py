@@ -204,103 +204,73 @@ def render_styles():
                 padding-top: 1.5rem;
                 padding-bottom: 2rem;
             }
-
             div[data-testid="stButton"] button {
                 border-radius: 10px;
                 font-weight: 600;
                 min-height: 42px;
             }
-
-
-
             .info-card {
-                border: 1px solid rgba(255, 255, 255, 0.14);
+                border: 1px solid var(--info-box-border);
                 border-radius: 14px;
                 padding: 16px 18px;
-                background: rgba(255, 255, 255, 0.025);
+                background: var(--info-box-bg);
                 min-height: 92px;
             }
-
             .info-label {
                 font-size: 13px;
                 font-weight: 700;
-                color: rgba(255, 255, 255, 0.55);
+                color: var(--info-label-color);
                 margin: 0 0 8px 0;
             }
-
             .info-value {
                 font-size: 24px;
                 font-weight: 800;
-                color: #ffffff;
+                color: var(--info-value-color);
                 margin: 0;
             }
-
             .last-evaluation-badge {
                 display: inline-flex;
                 align-items: center;
                 gap: 6px;
                 padding: 10px 18px;
                 border-radius: 999px;
-                border: 1px solid rgba(96, 165, 250, 0.65);
-                background: rgba(37, 99, 235, 0.18);
+                border: 1px solid rgba(96,165,250,0.65);
+                background: rgba(37,99,235,0.18);
                 color: #93c5fd;
                 font-size: 15px;
                 font-weight: 700;
                 width: fit-content;
                 margin-top: 16px;
             }
-
             .last-evaluation-badge span {
-                color: #ffffff;
+                color: var(--info-value-color);
                 font-weight: 800;
             }
-
-            .section-title {
-                font-size: 28px;
-                font-weight: 800;
-                color: #ffffff;
-                margin: 30px 0 18px 0;
-            }
-
-            .empty-box {
-                border: 1px solid rgba(96, 165, 250, 0.35);
+            .evaluation-card {
+                border: 1px solid var(--info-box-border);
                 border-radius: 14px;
-                padding: 24px 26px;
-                background: rgba(37, 99, 235, 0.14);
-                color: #93c5fd;
-                font-size: 16px;
-                font-weight: 600;
+                padding: 18px 20px;
+                margin-bottom: 12px;
+                background: var(--info-box-bg);
             }
-
+            .eval-label {
+                font-size: 13px;
+                font-weight: 700;
+                color: var(--info-label-color);
+                margin: 0 0 6px 0;
+            }
+            .eval-value {
+                font-size: 17px;
+                font-weight: 800;
+                color: var(--info-value-color);
+                margin: 0;
+            }
             .eval-grid {
                 display: grid;
                 grid-template-columns: 1.2fr 1.2fr 1fr;
                 gap: 18px;
                 align-items: center;
             }
-
-            .evaluation-card {
-                border: 1px solid rgba(255, 255, 255, 0.14);
-                border-radius: 14px;
-                padding: 18px 20px;
-                margin-bottom: 12px;
-                background: rgba(255, 255, 255, 0.025);
-            }
-
-            .eval-label {
-                font-size: 13px;
-                font-weight: 700;
-                color: rgba(255, 255, 255, 0.55);
-                margin: 0 0 6px 0;
-            }
-
-            .eval-value {
-                font-size: 17px;
-                font-weight: 800;
-                color: #ffffff;
-                margin: 0;
-            }
-
             .badge {
                 display: inline-flex;
                 align-items: center;
@@ -311,39 +281,29 @@ def render_styles():
                 font-weight: 800;
                 width: fit-content;
             }
-
             .badge-high {
                 color: #fecaca;
-                border: 1px solid rgba(248, 113, 113, 0.55);
-                background: rgba(220, 38, 38, 0.16);
+                border: 1px solid rgba(248,113,113,0.55);
+                background: rgba(220,38,38,0.16);
             }
-
             .badge-medium {
                 color: #fde68a;
-                border: 1px solid rgba(251, 191, 36, 0.55);
-                background: rgba(217, 119, 6, 0.16);
+                border: 1px solid rgba(251,191,36,0.55);
+                background: rgba(217,119,6,0.16);
             }
-
             .badge-low {
                 color: #bbf7d0;
-                border: 1px solid rgba(74, 222, 128, 0.55);
-                background: rgba(22, 163, 74, 0.16);
+                border: 1px solid rgba(74,222,128,0.55);
+                background: rgba(22,163,74,0.16);
             }
-
             .badge-neutral {
-                color: #cbd5e1;
-                border: 1px solid rgba(148, 163, 184, 0.45);
-                background: rgba(148, 163, 184, 0.12);
+                color: var(--badge-none-color);
+                border: 1px solid var(--badge-none-border);
+                background: var(--badge-none-bg);
             }
-
             @media (max-width: 900px) {
-                .student-title {
-                    font-size: 60px;
-                }
-
-                .eval-grid {
-                    grid-template-columns: 1fr;
-                }
+                .student-title { font-size: 60px; }
+                .eval-grid { grid-template-columns: 1fr; }
             }
         </style>
         """,
