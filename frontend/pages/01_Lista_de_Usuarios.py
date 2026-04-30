@@ -24,8 +24,9 @@ def fetch_users(query: str | None = None):
         return []
 
 
-def fetch_assignments_count(user_ids: list[int]) -> dict[int, int]:
-    counts: dict[int, int] = {}
+def fetch_assignments_labels(user_ids: list[int]) -> dict[int, list[str]]:
+    """Returns a dict mapping teacher_id -> list of classroom label strings."""
+    result: dict[int, list[str]] = {}
     for uid in user_ids:
         try:
             r = requests.get(
@@ -36,13 +37,39 @@ def fetch_assignments_count(user_ids: list[int]) -> dict[int, int]:
             )
             if r.status_code == 200:
                 data = r.json()
-                items = data.get("results", data)
-                counts[uid] = len(items) if isinstance(items, list) else 0
+                items = data.get("results", data) if isinstance(data, dict) else data
+                labels = []
+                for a in (items if isinstance(items, list) else []):
+                    cid = a.get("classroom")
+                    if not cid:
+                        continue
+                    try:
+                        cr = requests.get(
+                            f"{API_URL}/classrooms/{cid}/",
+                            headers=auth_headers(),
+                            timeout=10,
+                        )
+                        if cr.status_code == 200:
+                            c = cr.json()
+                            name = c.get("name")
+                            grade = c.get("grade")
+                            section = c.get("section", "")
+                            if name:
+                                labels.append(name)
+                            elif grade is not None:
+                                labels.append(f"{grade}°{section}")
+                            else:
+                                labels.append(f"Aula {cid}")
+                        else:
+                            labels.append(f"Aula {cid}")
+                    except Exception:
+                        labels.append(f"Aula {cid}")
+                result[uid] = labels
             else:
-                counts[uid] = 0
+                result[uid] = []
         except Exception:
-            counts[uid] = 0
-    return counts
+            result[uid] = []
+    return result
 
 
 def delete_user(user_id: int) -> bool:
@@ -211,7 +238,7 @@ def main():
         for u in paged_users
         if (u.get("role") or "").upper() in ("DOCENTE", "TEACHER", "PROFESOR")
     ]
-    assign_counts = fetch_assignments_count(teacher_ids) if teacher_ids else {}
+    assign_labels = fetch_assignments_labels(teacher_ids) if teacher_ids else {}
 
     for u in paged_users:
         uid = u.get("id")
@@ -220,7 +247,7 @@ def main():
         email = u.get("email") or "-"
         role = u.get("role") or "-"
         role_up = role.upper() if role else ""
-        salons = assign_counts.get(uid) if role_up in ("DOCENTE", "TEACHER", "PROFESOR") else None
+        salons = assign_labels.get(uid) if role_up in ("DOCENTE", "TEACHER", "PROFESOR") else None
 
         with st.container(border=True):
             name_col, user_col, role_col, action_col = st.columns([2.5, 2.2, 2.0, 2.1], gap="medium")
@@ -249,7 +276,11 @@ def main():
                 st.markdown('<div class="mid-wrap">', unsafe_allow_html=True)
                 meta_html = role_badge_html(role)
                 if salons is not None:
-                    meta_html += f' <span class="salon-pill">Salones: {salons}</span>'
+                    if salons:
+                        for label in salons:
+                            meta_html += f' <span class="salon-pill">{label}</span>'
+                    else:
+                        meta_html += ' <span class="salon-pill">Sin salón</span>'
                 st.markdown(f'<div class="meta-wrap">{meta_html}</div>', unsafe_allow_html=True)
                 st.markdown("</div>", unsafe_allow_html=True)
 
