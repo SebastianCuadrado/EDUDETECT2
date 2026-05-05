@@ -150,12 +150,28 @@ def inject_styles():
     )
 
 
+def _clear_delete_state():
+    for key in (
+        "confirm_delete_student_id",
+        "confirm_delete_student_name",
+        "confirm_delete_student_age",
+        "confirm_delete_student_classroom",
+    ):
+        st.session_state.pop(key, None)
+
+
 @st.dialog("Confirmar eliminación")
 def modal_confirmar_eliminar_alumno():
     sid = st.session_state.get("confirm_delete_student_id")
     nombre = st.session_state.get("confirm_delete_student_name", "este alumno")
+    age_text = st.session_state.get("confirm_delete_student_age", "N/D")
+    cls_label = st.session_state.get("confirm_delete_student_classroom", "-")
 
     st.warning(f"¿Estás seguro de que deseas eliminar a **{nombre}**?")
+    st.markdown(
+        f"**Salón:** {cls_label}  \n"
+        f"**Edad:** {age_text}"
+    )
     st.caption("Esta acción no se puede deshacer.")
 
     col1, col2 = st.columns(2)
@@ -170,13 +186,11 @@ def modal_confirmar_eliminar_alumno():
         else:
             st.error(msg)
 
-        st.session_state.pop("confirm_delete_student_id", None)
-        st.session_state.pop("confirm_delete_student_name", None)
+        _clear_delete_state()
         _safe_rerun()
 
     if col2.button("Cancelar", use_container_width=True):
-        st.session_state.pop("confirm_delete_student_id", None)
-        st.session_state.pop("confirm_delete_student_name", None)
+        _clear_delete_state()
         _safe_rerun()
 
 
@@ -380,6 +394,8 @@ def main():
                 if b2.button("Eliminar", key=f"stu_del_{sid}", use_container_width=True):
                     st.session_state.confirm_delete_student_id = sid
                     st.session_state.confirm_delete_student_name = full_name
+                    st.session_state.confirm_delete_student_age = age_text
+                    st.session_state.confirm_delete_student_classroom = cls_label
                     _safe_rerun()
                 st.markdown('</div>', unsafe_allow_html=True)
 
