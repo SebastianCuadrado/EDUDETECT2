@@ -156,32 +156,45 @@ def modal_crear_salon():
 
     with c1:
         year = st.number_input(
-            "Año",
+            "Año *",
             min_value=2000,
             max_value=2100,
-            value=date.today().year,
+            value=None,
             step=1,
+            placeholder="Ej: 2025",
         )
 
     with c2:
         grade = st.number_input(
-            "Grado",
+            "Grado *",
             min_value=1,
             max_value=12,
-            value=1,
+            value=None,
             step=1,
+            placeholder="1 – 12",
         )
 
     with c3:
-        section = st.text_input("Sección", value="A", max_chars=2)
+        section = st.text_input("Sección *", value="", max_chars=2, placeholder="Ej: A")
 
-    name = st.text_input("Nombre del salón *", max_chars=100)
+    name = st.text_input("Nombre del salón *", value="", max_chars=100, placeholder="Ej: Aula 3A")
 
     col_crear, col_cancelar = st.columns(2)
 
     if col_crear.button("Crear", type="primary", use_container_width=True):
+        errors = []
+        if year is None:
+            errors.append("El campo **Año** no puede estar vacío.")
+        if grade is None:
+            errors.append("El campo **Grado** no puede estar vacío.")
+        if not section.strip():
+            errors.append("El campo **Sección** no puede estar vacío.")
         if not name.strip():
-            st.error("El nombre del salón es obligatorio")
+            errors.append("El campo **Nombre del salón** no puede estar vacío.")
+
+        if errors:
+            for err in errors:
+                st.error(err)
             return
 
         ok, data = api_post(

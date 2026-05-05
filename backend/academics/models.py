@@ -30,7 +30,7 @@ class Student(models.Model):
 
 
 class Classroom(models.Model):
-    name = models.CharField(max_length=100, blank=True, default="")
+    name = models.CharField(max_length=100)
     school = models.CharField(max_length=255, blank=True)
     academic_year = models.PositiveIntegerField()
     grade = models.PositiveSmallIntegerField()

@@ -149,14 +149,14 @@ def main():
 
         with c3:
             section = st.text_input(
-                "Sección",
+                "Sección *",
                 value=room.get("section") or "",
-                max_chars=2
+                max_chars=2,
             )
 
         name = st.text_input(
-            "Nombre del salón",
-            value=room.get("name") or ""
+            "Nombre del salón *",
+            value=room.get("name") or "",
         )
 
         c_cancel, c_save = st.columns([1, 1])
@@ -177,12 +177,15 @@ def main():
         go_back()
 
     if save:
+        errors = []
         if not section.strip():
-            st.error("La sección es obligatoria.")
-            return
-
+            errors.append("El campo **Sección** no puede estar vacío.")
         if not name.strip():
-            st.error("El nombre del salón es obligatorio.")
+            errors.append("El campo **Nombre del salón** no puede estar vacío.")
+
+        if errors:
+            for err in errors:
+                st.error(err)
             return
 
         payload = {
