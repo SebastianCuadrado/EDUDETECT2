@@ -12,7 +12,6 @@ class ClassroomSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "school", "academic_year", "grade", "section"]
         extra_kwargs = {
             "school": {"required": False, "allow_blank": True},
-            "name": {"required": False, "allow_blank": True},
         }
 
 
