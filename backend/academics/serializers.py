@@ -100,6 +100,20 @@ class TeacherAssignmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = TeacherAssignment
         fields = ["id", "teacher", "classroom", "role", "start_date", "end_date"]
+    
+    def validate(self, attrs):
+        start_date = attrs.get("start_date")
+        classroom = attrs.get("classroom")
+        if start_date and classroom:
+            try:
+                acad_year = int(classroom.academic_year)
+            except Exception:
+                acad_year = None
+            if acad_year and start_date.year != acad_year:
+                raise serializers.ValidationError({
+                    "start_date": "La fecha de inicio de asignación debe corresponder al periodo académico del salón seleccionado."
+                })
+        return attrs
 
 
 class StudentTeacherSerializer(serializers.ModelSerializer):
