@@ -104,6 +104,7 @@ class TeacherAssignmentSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         start_date = attrs.get("start_date")
         classroom = attrs.get("classroom")
+        teacher = attrs.get("teacher")
         if start_date and classroom:
             try:
                 acad_year = int(classroom.academic_year)
@@ -113,6 +114,21 @@ class TeacherAssignmentSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({
                     "start_date": "La fecha de inicio de asignación debe corresponder al periodo académico del salón seleccionado."
                 })
+        # Validar duplicados: un mismo docente no puede tener más de una asignación para el mismo salón
+        if classroom and teacher:
+            qs = TeacherAssignment.objects.filter(teacher=teacher, classroom=classroom)
+            if self.instance is None:
+                # Creación: no debe existir ninguna asignación previa
+                if qs.exists():
+                    raise serializers.ValidationError({
+                        "classroom": "El docente ya tiene una asignación registrada para el salón seleccionado."
+                    })
+            else:
+                # Actualización: permitir si la única asignación existente es la misma instancia
+                if qs.exclude(id=self.instance.id).exists():
+                    raise serializers.ValidationError({
+                        "classroom": "El docente ya tiene una asignación registrada para el salón seleccionado."
+                    })
         return attrs
 
 
