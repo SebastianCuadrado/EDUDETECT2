@@ -1,5 +1,5 @@
 import os
-from datetime import date
+from datetime import date, timedelta
 import io
 import pandas as pd
 from openpyxl.utils import get_column_letter
@@ -727,6 +727,21 @@ def page_new():
 
     if cancel:
         go_to_list()
+
+    if get_diag:
+        student_age = selected_student[3]
+        if student_age and eval_date:
+            today = date.today()
+            try:
+                min_eval_date = date(today.year - student_age - 1, today.month, today.day)
+            except ValueError:
+                min_eval_date = date(today.year - student_age - 1, today.month, 28)
+            min_eval_date += timedelta(days=1)
+            if eval_date < min_eval_date:
+                st.error(
+                    "La fecha de evaluación no puede ser anterior al nacimiento estimado del alumno."
+                )
+                get_diag = False
 
     if get_diag:
         answers_txt = [NUM_TO_TXT.get(value, "NUNCA") for value in responses_num]

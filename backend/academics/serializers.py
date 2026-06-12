@@ -117,6 +117,26 @@ class EvaluationSerializer(serializers.ModelSerializer):
     def get_evaluated_by_name(self, obj):
         return getattr(obj.evaluated_by, "username", None)
 
+    def validate(self, attrs):
+        evaluated_at = attrs.get("evaluated_at")
+        student = attrs.get("student")
+        age = getattr(student, "age", None) if student else None
+
+        if evaluated_at and age:
+            today = date.today()
+            try:
+                min_eval_date = date(today.year - age - 1, today.month, today.day)
+            except ValueError:
+                min_eval_date = date(today.year - age - 1, today.month, 28)
+            min_eval_date += timedelta(days=1)
+
+            if evaluated_at < min_eval_date:
+                raise serializers.ValidationError({
+                    "evaluated_at": "La fecha de evaluación no puede ser anterior al nacimiento estimado del alumno."
+                })
+
+        return attrs
+
     def create(self, validated_data):
         request = self.context.get("request")
         if request and request.user and request.user.is_authenticated:
