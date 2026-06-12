@@ -1,3 +1,5 @@
+import re
+
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from .models import Student, Classroom, Enrollment, TeacherAssignment, StudentTeacher, Evaluation
@@ -13,6 +15,24 @@ class ClassroomSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "school": {"required": False, "allow_blank": True},
         }
+
+    def validate_name(self, value):
+        if not value or not value.strip():
+            raise serializers.ValidationError(
+                "El nombre del salón debe contener al menos una letra y no puede estar compuesto solo por números o caracteres especiales."
+            )
+        if not re.search(r"[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ]", value.strip()):
+            raise serializers.ValidationError(
+                "El nombre del salón debe contener al menos una letra y no puede estar compuesto solo por números o caracteres especiales."
+            )
+        return value
+
+    def validate_section(self, value):
+        if not value or not value.strip():
+            raise serializers.ValidationError("La sección solo debe contener letras y números.")
+        if not re.match(r"^[a-zA-Z0-9]+$", value.strip()):
+            raise serializers.ValidationError("La sección solo debe contener letras y números.")
+        return value
 
 
 class StudentSerializer(serializers.ModelSerializer):

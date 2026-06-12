@@ -1,4 +1,5 @@
 import os
+import re
 from datetime import date
 
 import requests
@@ -180,8 +181,15 @@ def main():
         errors = []
         if not section.strip():
             errors.append("El campo **Sección** no puede estar vacío.")
+        elif not re.match(r"^[a-zA-Z0-9]+$", section.strip()):
+            errors.append("La sección solo debe contener letras y números.")
+
         if not name.strip():
             errors.append("El campo **Nombre del salón** no puede estar vacío.")
+        elif not re.search(r"[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ]", name.strip()):
+            errors.append(
+                "El nombre del salón debe contener al menos una letra y no puede estar compuesto solo por números o caracteres especiales."
+            )
 
         if errors:
             for err in errors:
