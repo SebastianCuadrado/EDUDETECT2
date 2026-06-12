@@ -23,6 +23,12 @@ class StudentSerializer(serializers.ModelSerializer):
         model = Student
         fields = ["id", "first_name", "last_name", "age", "gender", "last_evaluation", "current_grade"]
 
+    def validate_gender(self, value):
+        valid = {code for code, _ in Student.GENDER_CHOICES}
+        if not value or value not in valid:
+            raise serializers.ValidationError("Debe seleccionar el género del estudiante.")
+        return value
+
     def get_last_evaluation(self, obj):
         ev = obj.evaluations.order_by("-evaluated_at", "-id").first()
         if not ev:
@@ -102,6 +108,12 @@ class TeacherAssignmentSerializer(serializers.ModelSerializer):
         fields = ["id", "teacher", "classroom", "role", "start_date", "end_date"]
     
     def validate(self, attrs):
+        teacher = attrs.get("teacher")
+        if self.instance is None and teacher and not getattr(teacher, "is_active", True):
+            raise serializers.ValidationError(
+                "No se pueden asignar salones a un docente inhabilitado."
+            )
+
         start_date = attrs.get("start_date")
         classroom = attrs.get("classroom")
         if start_date and classroom:
@@ -113,6 +125,21 @@ class TeacherAssignmentSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({
                     "start_date": "La fecha de inicio de asignación debe corresponder al periodo académico del salón seleccionado."
                 })
+        # Validar duplicados: un mismo docente no puede tener más de una asignación para el mismo salón
+        if classroom and teacher:
+            qs = TeacherAssignment.objects.filter(teacher=teacher, classroom=classroom)
+            if self.instance is None:
+                # Creación: no debe existir ninguna asignación previa
+                if qs.exists():
+                    raise serializers.ValidationError({
+                        "classroom": "El docente ya tiene una asignación registrada para el salón seleccionado."
+                    })
+            else:
+                # Actualización: permitir si la única asignación existente es la misma instancia
+                if qs.exclude(id=self.instance.id).exists():
+                    raise serializers.ValidationError({
+                        "classroom": "El docente ya tiene una asignación registrada para el salón seleccionado."
+                    })
         return attrs
 
 

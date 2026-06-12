@@ -297,6 +297,12 @@ def main():
                     room_label = room_map.get(a["classroom"], f"Aula ID {a['classroom']}")
                     st.caption(f"{i}. {room_label} · Rol {a['role']} · Inicio {a.get('start_date') or '-'}")
 
+            if not is_active:
+                st.warning(
+                    "No se pueden asignar salones a un docente inhabilitado. "
+                    "Habilita al docente primero para agregar nuevas asignaciones."
+                )
+
             st.markdown('<div class="mini-title">Agregar asignación</div>', unsafe_allow_html=True)
 
             room_opts = [
@@ -329,15 +335,18 @@ def main():
                 add_btn = st.form_submit_button("Asignar", use_container_width=True)
 
             if add_btn and sel_room_id:
-                staged.append(
-                    {
-                        "classroom": sel_room_id,
-                        "role": teacher_role,
-                        "start_date": start_d.isoformat() if start_d else None,
-                    }
-                )
-                st.session_state.staged_assignments = staged
-                st.rerun()
+                if not is_active:
+                    st.error("No se pueden asignar salones a un docente inhabilitado.")
+                else:
+                    staged.append(
+                        {
+                            "classroom": sel_room_id,
+                            "role": teacher_role,
+                            "start_date": start_d.isoformat() if start_d else None,
+                        }
+                    )
+                    st.session_state.staged_assignments = staged
+                    st.rerun()
 
             st.markdown("</div>", unsafe_allow_html=True)
 
@@ -397,13 +406,19 @@ def main():
                     if new_role != a.get("role") or (new_start or None) != (a.get("start_date") or None):
                         api_patch_assignment(aid, {"role": new_role, "start_date": new_start})
 
-            for a in st.session_state.get("staged_assignments", []):
-                api_post_assignment(
-                    uid,
-                    a["classroom"],
-                    a.get("role", "TITULAR"),
-                    date.fromisoformat(a["start_date"]) if a.get("start_date") else None,
+            if st.session_state.get("staged_assignments") and not is_active:
+                st.warning(
+                    "Las asignaciones pendientes no se procesaron porque el docente está inhabilitado."
                 )
+                st.session_state["staged_assignments"] = []
+            else:
+                for a in st.session_state.get("staged_assignments", []):
+                    api_post_assignment(
+                        uid,
+                        a["classroom"],
+                        a.get("role", "TITULAR"),
+                        date.fromisoformat(a["start_date"]) if a.get("start_date") else None,
+                    )
 
         st.success("Usuario actualizado")
         st.session_state["force_refresh_users"] = True
