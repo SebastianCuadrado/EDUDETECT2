@@ -272,6 +272,8 @@ def main():
                 if c.get("name"):
                     label = f"{c.get('name')} ({label})"
                 room_map[rid] = label
+            # Mapeo completo de salones por id para validaciones
+            rooms_by_id = {c.get("id"): c for c in rooms}
 
             staged = st.session_state.get("staged_assignments", [])
             if staged:
@@ -307,7 +309,11 @@ def main():
                 teacher_role = st.selectbox("Rol en el salon", options=["TITULAR", "APOYO"], index=0)
 
             with a3:
-                start_d = st.date_input("Inicio (opcional)", value=None)
+                start_d = st.date_input(
+                    "Inicio de asignación (opcional)",
+                    value=None,
+                    help="Indica desde qué fecha el docente estará asignado al salón seleccionado.",
+                )
 
             with a4:
                 st.markdown('<div class="assign-btn-wrap">', unsafe_allow_html=True)
@@ -319,15 +325,42 @@ def main():
                 if sel_room_id is None:
                     st.warning("Selecciona un salón antes de asignar.")
                 else:
-                    staged.append(
-                        {
-                            "classroom": sel_room_id,
-                            "role": teacher_role,
-                            "start_date": start_d.isoformat() if start_d else None,
-                        }
-                    )
-                    st.session_state["staged_assignments"] = staged
-                    safe_rerun()
+                    # Validar año académico si se ingresó fecha
+                    if start_d:
+                        room = rooms_by_id.get(sel_room_id)
+                        if room and room.get("academic_year") is not None:
+                            try:
+                                room_year = int(room.get("academic_year"))
+                            except Exception:
+                                room_year = None
+                            if room_year and start_d.year != room_year:
+                                st.error(
+                                    "La fecha de inicio de asignación debe corresponder al periodo académico del salón seleccionado."
+                                )
+                                # No agregar la asignación
+                            else:
+                                staged.append(
+                                    {
+                                        "classroom": sel_room_id,
+                                        "role": teacher_role,
+                                        "start_date": start_d.isoformat() if start_d else None,
+                                    }
+                                )
+                                st.session_state["staged_assignments"] = staged
+                                safe_rerun()
+                        else:
+                            st.error("No se pudo validar el salón seleccionado. Intenta nuevamente.")
+                    else:
+                        # Fecha no informada, proceder (campo opcional)
+                        staged.append(
+                            {
+                                "classroom": sel_room_id,
+                                "role": teacher_role,
+                                "start_date": start_d.isoformat() if start_d else None,
+                            }
+                        )
+                        st.session_state["staged_assignments"] = staged
+                        safe_rerun()
 
             st.markdown("</div>", unsafe_allow_html=True)
 
