@@ -2,6 +2,7 @@ import os
 from datetime import date
 import io
 import pandas as pd
+from openpyxl.utils import get_column_letter
 
 import requests
 import streamlit as st
@@ -379,35 +380,82 @@ def diagnosis_class(probability=None, diagnosis=None):
 
 def evals_to_excel(evals: list[dict]) -> bytes:
     rows = []
+    
+    # Crear lista combinada de todas las preguntas (30 total)
+    all_questions = LECTURA_QUESTIONS + ESCRITURA_QUESTIONS
 
     for ev in evals:
         probability = ev.get("probability")
         diagnosis = ev.get("diagnosis") or bucket_label(probability)
 
-        rows.append(
-            {
-                "Fecha": ev.get("evaluated_at", "-"),
-                "Alumno": ev.get("student_name") or f"Alumno #{ev.get('student')}",
-                "Diagnóstico": diagnosis,
-                "Probabilidad": format_probability(probability),
-                "Docente": ev.get("evaluated_by_name") or "Yo",
-            }
-        )
+        row = {
+            "Fecha": ev.get("evaluated_at", "-"),
+            "Alumno": ev.get("student_name") or f"Alumno #{ev.get('student')}",
+            "Diagnóstico": diagnosis,
+            "Probabilidad": format_probability(probability),
+            "Docente": ev.get("evaluated_by_name") or "Yo",
+        }
+        
+        # Agregar las 30 columnas de respuestas
+        answers = ev.get("answers") or []
+        for idx in range(30):
+            question_num = f"P{idx + 1}"
+            
+            if idx < len(answers):
+                answer_value = answers[idx]
+                # Si la respuesta es un string de texto, convertir a número
+                if isinstance(answer_value, str):
+                    answer_num = {
+                        "NUNCA": 1,
+                        "RARA VEZ": 2,
+                        "A VECES": 3,
+                        "FRECUENTEMENTE": 4,
+                        "SIEMPRE": 5,
+                    }.get(answer_value, None)
+                    row[question_num] = answer_num
+                else:
+                    row[question_num] = answer_value
+            else:
+                row[question_num] = None
+
+        rows.append(row)
 
     df = pd.DataFrame(rows)
 
     output = io.BytesIO()
 
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        # Escribir hoja de evaluaciones
         df.to_excel(writer, index=False, sheet_name="Evaluaciones")
 
         worksheet = writer.sheets["Evaluaciones"]
 
+        # Ajustar ancho de columnas
         worksheet.column_dimensions["A"].width = 16
         worksheet.column_dimensions["B"].width = 28
         worksheet.column_dimensions["C"].width = 22
         worksheet.column_dimensions["D"].width = 18
         worksheet.column_dimensions["E"].width = 22
+        
+        # Ajustar ancho para las columnas de preguntas (P1-P30)
+        for idx in range(30):
+            col_letter = get_column_letter(6 + idx)  # Columna F es la 6ta (índice 6)
+            worksheet.column_dimensions[col_letter].width = 6
+        
+        # Crear hoja de Preguntas
+        questions_data = []
+        for idx, question_text in enumerate(all_questions, start=1):
+            questions_data.append({
+                "Pregunta": f"P{idx}",
+                "Texto": question_text
+            })
+        
+        df_questions = pd.DataFrame(questions_data)
+        df_questions.to_excel(writer, index=False, sheet_name="Preguntas")
+        
+        worksheet_questions = writer.sheets["Preguntas"]
+        worksheet_questions.column_dimensions["A"].width = 12
+        worksheet_questions.column_dimensions["B"].width = 80
 
     output.seek(0)
     return output.getvalue()
