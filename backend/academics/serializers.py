@@ -1,4 +1,5 @@
 import re
+from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
@@ -32,6 +33,13 @@ class ClassroomSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("La sección solo debe contener letras y números.")
         if not re.match(r"^[a-zA-Z0-9]+$", value.strip()):
             raise serializers.ValidationError("La sección solo debe contener letras y números.")
+        return value
+
+    def validate_academic_year(self, value):
+        if value < date.today().year:
+            raise serializers.ValidationError(
+                "El año académico no puede ser anterior al año actual."
+            )
         return value
 
 
@@ -120,6 +128,26 @@ class EnrollmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Enrollment
         fields = ["id", "student", "classroom", "start_date", "end_date"]
+
+    def validate(self, attrs):
+        start_date = attrs.get("start_date")
+        student = attrs.get("student")
+        age = getattr(student, "age", None) if student else None
+
+        if start_date and age:
+            today = date.today()
+            try:
+                min_start_date = date(today.year - age - 1, today.month, today.day)
+            except ValueError:
+                min_start_date = date(today.year - age - 1, today.month, 28)
+            min_start_date += timedelta(days=1)
+
+            if start_date < min_start_date:
+                raise serializers.ValidationError({
+                    "start_date": "La fecha de inicio de matrícula no puede ser anterior al nacimiento estimado del alumno."
+                })
+
+        return attrs
 
 
 class TeacherAssignmentSerializer(serializers.ModelSerializer):
