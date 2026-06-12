@@ -239,7 +239,7 @@ def main():
 
         with c2:
             gender = st.selectbox(
-                "Género",
+                "Género*",
                 options=gender_options,
                 index=gender_index,
                 format_func=lambda x: {
@@ -298,6 +298,10 @@ def main():
     if save:
         if not first_name.strip() or not last_name.strip():
             st.error("Completa los campos obligatorios (*).")
+            return
+
+        if not gender:
+            st.error("Debe seleccionar el género del estudiante.")
             return
 
         payload = {

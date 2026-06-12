@@ -23,6 +23,12 @@ class StudentSerializer(serializers.ModelSerializer):
         model = Student
         fields = ["id", "first_name", "last_name", "age", "gender", "last_evaluation", "current_grade"]
 
+    def validate_gender(self, value):
+        valid = {code for code, _ in Student.GENDER_CHOICES}
+        if not value or value not in valid:
+            raise serializers.ValidationError("Debe seleccionar el género del estudiante.")
+        return value
+
     def get_last_evaluation(self, obj):
         ev = obj.evaluations.order_by("-evaluated_at", "-id").first()
         if not ev:
@@ -102,9 +108,14 @@ class TeacherAssignmentSerializer(serializers.ModelSerializer):
         fields = ["id", "teacher", "classroom", "role", "start_date", "end_date"]
     
     def validate(self, attrs):
+        teacher = attrs.get("teacher")
+        if self.instance is None and teacher and not getattr(teacher, "is_active", True):
+            raise serializers.ValidationError(
+                "No se pueden asignar salones a un docente inhabilitado."
+            )
+
         start_date = attrs.get("start_date")
         classroom = attrs.get("classroom")
-        teacher = attrs.get("teacher")
         if start_date and classroom:
             try:
                 acad_year = int(classroom.academic_year)
