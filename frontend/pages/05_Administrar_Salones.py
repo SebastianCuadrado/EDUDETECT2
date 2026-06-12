@@ -186,6 +186,8 @@ def modal_crear_salon():
         errors = []
         if year is None:
             errors.append("El campo **Año** no puede estar vacío.")
+        elif int(year) < date.today().year:
+            errors.append("El año académico no puede ser anterior al año actual.")
         if grade is None:
             errors.append("El campo **Grado** no puede estar vacío.")
 
@@ -406,6 +408,9 @@ def main():
 
         if save:
             errors = []
+            if int(year) < date.today().year:
+                errors.append("El año académico no puede ser anterior al año actual.")
+
             if not section.strip():
                 errors.append("El campo **Sección** no puede estar vacío.")
             elif not re.match(r"^[a-zA-Z0-9]+$", section.strip()):

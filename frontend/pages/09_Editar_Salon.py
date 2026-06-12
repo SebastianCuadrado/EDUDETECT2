@@ -179,6 +179,9 @@ def main():
 
     if save:
         errors = []
+        if int(year) < date.today().year:
+            errors.append("El año académico no puede ser anterior al año actual.")
+
         if not section.strip():
             errors.append("El campo **Sección** no puede estar vacío.")
         elif not re.match(r"^[a-zA-Z0-9]+$", section.strip()):

@@ -1,5 +1,5 @@
 import os
-from datetime import date
+from datetime import date, timedelta
 
 import requests
 import streamlit as st
@@ -192,6 +192,19 @@ def main():
         if not gender:
             st.error("Debe seleccionar el género del estudiante.")
             return
+
+        if start_d:
+            today = date.today()
+            try:
+                min_start = date(today.year - age - 1, today.month, today.day)
+            except ValueError:
+                min_start = date(today.year - age - 1, today.month, 28)
+            min_start += timedelta(days=1)
+            if start_d < min_start:
+                st.error(
+                    "La fecha de inicio de matrícula no puede ser anterior al nacimiento estimado del alumno."
+                )
+                return
 
         payload = {
             "first_name": first_name.strip(),
