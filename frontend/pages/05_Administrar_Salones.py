@@ -1,4 +1,5 @@
 import os
+import re
 from datetime import date
 
 import requests
@@ -187,10 +188,18 @@ def modal_crear_salon():
             errors.append("El campo **Año** no puede estar vacío.")
         if grade is None:
             errors.append("El campo **Grado** no puede estar vacío.")
+
         if not section.strip():
             errors.append("El campo **Sección** no puede estar vacío.")
+        elif not re.match(r"^[a-zA-Z0-9]+$", section.strip()):
+            errors.append("La sección solo debe contener letras y números.")
+
         if not name.strip():
             errors.append("El campo **Nombre del salón** no puede estar vacío.")
+        elif not re.search(r"[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ]", name.strip()):
+            errors.append(
+                "El nombre del salón debe contener al menos una letra y no puede estar compuesto solo por números o caracteres especiales."
+            )
 
         if errors:
             for err in errors:
@@ -396,21 +405,38 @@ def main():
             _safe_rerun()
 
         if save:
-            payload = {
-                "academic_year": int(year),
-                "grade": int(grade),
-                "section": section.strip().upper(),
-                "name": name.strip(),
-            }
+            errors = []
+            if not section.strip():
+                errors.append("El campo **Sección** no puede estar vacío.")
+            elif not re.match(r"^[a-zA-Z0-9]+$", section.strip()):
+                errors.append("La sección solo debe contener letras y números.")
 
-            ok, data = api_patch(f"/classrooms/{edit_data.get('id')}/", payload)
+            if not name.strip():
+                errors.append("El campo **Nombre del salón** no puede estar vacío.")
+            elif not re.search(r"[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ]", name.strip()):
+                errors.append(
+                    "El nombre del salón debe contener al menos una letra y no puede estar compuesto solo por números o caracteres especiales."
+                )
 
-            if ok:
-                st.success("Salón actualizado")
-                st.session_state.pop("edit_room", None)
-                _safe_rerun()
+            if errors:
+                for err in errors:
+                    st.error(err)
             else:
-                st.error(str(data))
+                payload = {
+                    "academic_year": int(year),
+                    "grade": int(grade),
+                    "section": section.strip().upper(),
+                    "name": name.strip(),
+                }
+
+                ok, data = api_patch(f"/classrooms/{edit_data.get('id')}/", payload)
+
+                if ok:
+                    st.success("Salón actualizado")
+                    st.session_state.pop("edit_room", None)
+                    _safe_rerun()
+                else:
+                    st.error(str(data))
 
 
 if __name__ == "__main__":
